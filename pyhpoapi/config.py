@@ -5,6 +5,7 @@ import configparser
 def config_item_list(value, convert=str):
     return [convert(x) for x in value.split(',')]
 
+
 local_config = os.path.join(
     os.getcwd(),
     'config.ini'
@@ -27,4 +28,3 @@ CORS_METHODS = config_item_list(
 CORS_HEADERS = config_item_list(
     config.get('default', 'cors-headers', fallback='')
 )
-
