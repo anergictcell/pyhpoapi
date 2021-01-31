@@ -1,0 +1,10 @@
+#description: Mock HPO-Omim relations
+#date: 2020-10-13
+#HPO-version: Mock HPO
+DatabaseID	DiseaseName	Qualifier	HPO_ID	Reference	Evidence	Onset	Frequency	Sex Modifier	Aspect	Biocuration
+OMIM:600001	Disease 1		HP:0021	PMID:25653144	PCS	1/1	P	HPO:probinson[2020-07-23];HPO:probinson[2020-07-23]
+OMIM:600001	Disease 1		HP:0013	PMID:25653144	PCS	1/1	P	HPO:probinson[2020-07-23];HPO:probinson[2020-07-23]
+OMIM:600002	Disease 2		HP:0021	PMID:25653144	PCS	1/1	P	HPO:probinson[2020-07-23];HPO:probinson[2020-07-23]
+OMIM:600002	Disease 2		HP:0031	PMID:25653144	PCS	1/1	P	HPO:probinson[2020-07-23];HPO:probinson[2020-07-23]
+ORPHA:1	Orpha disease 1		HP:0041	ORPHA:1	TAS		HP:0040283			P	ORPHA:orphadata[2020-10-13]
+DECIPHER:1	Decipher disease 1		HP:0041	DECIPHER:1	IEA					P	HPO:skoehler[2013-05-29]
