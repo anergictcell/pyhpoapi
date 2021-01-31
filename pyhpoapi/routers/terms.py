@@ -423,7 +423,7 @@ async def gene_enrichment(
     set1 = get_hpo_set(set1)
     res = gene_model.enrichment(method, set1)
     return [{
-        'gene:': x['item'].toJSON(),
+        'gene': x['item'].toJSON(),
         'count': x['count'],
         'enrichment': x['enrichment']
     } for x in res[offset:(limit+offset)]]
@@ -472,7 +472,7 @@ async def omim_enrichment(
     set1 = get_hpo_set(set1)
     res = omim_model.enrichment(method, set1)
     return [{
-        'omim:': x['item'].toJSON(),
+        'omim': x['item'].toJSON(),
         'count': x['count'],
         'enrichment': x['enrichment']
     } for x in res[offset:(limit+offset)]]

@@ -1,3 +1,6 @@
+import warnings
+
+
 from fastapi import HTTPException
 
 from pyhpo.ontology import Ontology
@@ -18,10 +21,11 @@ def get_hpo_term(termid):
             detail='HPO Term does not exist',
             headers={'X-TermNotFound': termid}
         )
-    return Ontology.get_hpo_object(identifier)
+    return term
 
 
 def get_hpo_id(termid):
+    warnings.warn("This method is deprecated", DeprecationWarning)
     try:
         return int(termid)
     except ValueError:
