@@ -57,5 +57,52 @@ a ``config.ini`` file in your working directory and specify CORS settings::
     cors-headers = *
 
 
+Dev
+===
+
+Getting started for development
+-------------------------------
+Clone the repository
+
+.. code:: bash
+
+    git clone https://github.com/anergictcell/pyhpoapi.git
+    cd pyhpoapi
+
+
+Use Docker for development
+--------------------------
+One way to do this is to run a docker container during development
+
+.. code:: bash
+    docker run --rm -v $(pwd):/src -p 8000:8000 -it python:3.9-slim-buster bash
+
+    cd src
+    pip3 install -r requirements.txt
+    pip3 install -r requirements-dev.txt
+
+    python3 -m unittest discover tests
+
+    uvicorn --host 0.0.0.0 --reload pyhpoapi.main:app
+
+
+Or local development without Docker
+-----------------------------------
+
+Create a virtual environment and install requirements in the virtual environment
+
+
+.. code:: bash
+
+    virtualenv --python pyhon3 venv_pyhpoapi
+    source venv_pyhpoapi/bin/activate
+
+    pip3 install -r requirements.txt
+    pip3 install -r requirements-dev.txt
+
+    python3 -m unittest discover tests
+
+    uvicorn --reload pyhpoapi.main:app
+
 
 .. _PyHPO: https://esbme.com/pyhpo/docs/ 
