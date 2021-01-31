@@ -40,8 +40,8 @@ async def omim_disease(
     """
     try:
         res = Omim.get(omim_id).toJSON(verbose=verbose)
-    except AttributeError:
-        raise HTTPException(status_code=404, detail="OMIM disease does not exist")
+    except KeyError:
+        raise HTTPException(status_code=404, detail='OMIM disease does not exist')
     try:
         res['hpo'] = [Ontology[x].toJSON() for x in res['hpo']]
     except KeyError:
@@ -77,7 +77,7 @@ async def gene(
     """
     try:
         res = Gene.get(gene_id).toJSON(verbose=verbose)
-    except AttributeError:
+    except KeyError:
         raise HTTPException(status_code=404, detail="Gene does not exist")
     try:
         res['hpo'] = [Ontology[x].toJSON() for x in res['hpo']]
@@ -103,8 +103,9 @@ async def omim_similarity(
     Similarity score between one HPOSet and an OMIM Disease
     """
     set1 = get_hpo_set(set1)
-    disease = Omim.get(omim)
-    if disease is None:
+    try:
+        disease = Omim.get(omim)
+    except KeyError:
         raise HTTPException(status_code=404, detail="OMIM disease does not exist")
     set2 = HPOSet.from_queries(disease.hpo)
 
@@ -139,12 +140,11 @@ async def batch_omim_similarity(
     other_sets = []
 
     for other in data.omim_diseases:
-        disease = Omim.get(other)
-
-        if disease is None:
-            hpos = ''
-        else:
+        try:
+            disease = Omim.get(other)
             hpos = ','.join([str(x) for x in disease.hpo])
+        except KeyError:
+            hpos = ''
 
         other_sets.append(
             models.POST_HPOSet(
@@ -211,8 +211,9 @@ async def gene_similarity(
     Similarity score between one HPOSet and an OMIM Disease
     """
     set1 = get_hpo_set(set1)
-    actual_gene = Gene.get(gene)
-    if actual_gene is None:
+    try:
+        actual_gene = Gene.get(gene)
+    except KeyError:
         raise HTTPException(status_code=404, detail="Gene does not exist")
     set2 = HPOSet.from_queries(actual_gene.hpo)
 

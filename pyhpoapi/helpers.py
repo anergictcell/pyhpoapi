@@ -5,6 +5,7 @@ from fastapi import HTTPException
 
 from pyhpo.ontology import Ontology
 from pyhpo.set import HPOSet
+from pyhpo.annotations import Gene, Omim
 
 
 def get_hpo_term(termid):
