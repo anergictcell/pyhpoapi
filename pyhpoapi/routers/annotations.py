@@ -41,7 +41,10 @@ async def omim_disease(
     try:
         res = Omim.get(omim_id).toJSON(verbose=verbose)
     except KeyError:
-        raise HTTPException(status_code=404, detail='OMIM disease does not exist')
+        raise HTTPException(
+            status_code=404,
+            detail='OMIM disease does not exist'
+        )
     try:
         res['hpo'] = [Ontology[x].toJSON() for x in res['hpo']]
     except KeyError:
@@ -106,7 +109,10 @@ async def omim_similarity(
     try:
         disease = Omim.get(omim)
     except KeyError:
-        raise HTTPException(status_code=404, detail="OMIM disease does not exist")
+        raise HTTPException(
+            status_code=404,
+            detail="OMIM disease does not exist"
+        )
     set2 = HPOSet.from_queries(disease.hpo)
 
     return {
