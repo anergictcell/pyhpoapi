@@ -4,8 +4,6 @@ from unittest.mock import patch, MagicMock
 
 from fastapi.testclient import TestClient
 from pyhpoapi.server import main
-from pyhpoapi.routers import terms
-from pyhpoapi.models import HPOSimple
 
 from pyhpo.ontology import Ontology
 from pyhpo.annotations import GeneSingleton, OmimDisease
@@ -67,44 +65,54 @@ class TermsAPITests(unittest.TestCase):
     def test_similarity(self):
         set1 = 'HP:0011,HP:0021'
         set2 = 'HP:0012,HP:0031'
-        with patch.object(
-            terms,
-            'get_hpo_set',
-            side_effect=[
-                MagicMock(
-                    toJSON=lambda: [
-                        HPOSimple.Config.schema_extra['example']
-                    ]),
-                MagicMock(
-                    toJSON=lambda: [
-                        HPOSimple.Config.schema_extra['example']
-                    ],
-                    similarity=lambda: 1.0
-                )
-            ]
-        ) as p:
-            response = client.get(
-                '/terms/similarity?set1={}&set2={}'.format(
-                    set1, set2)
-            )
-            self.assertEqual(
-                response.status_code,
-                200
-            )
-            res = response.json()
-            self.assertEqual(
-                res['set1'],
-                [HPOSimple.Config.schema_extra['example']]
-            )
-            self.assertEqual(
-                res['set1'],
-                [HPOSimple.Config.schema_extra['example']]
-            )
-            self.assertIsInstance(res['similarity'], float)
-            self.assertEqual(
-                res['similarity'],
-                1.0
-            )
+        response = client.get(
+            '/terms/similarity?set1={}&set2={}'.format(
+                set1, set2)
+        )
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+        res = response.json()
+        self.assertEqual(
+            res['set1'],
+            [{
+                'int': 11,
+                'id': 'HP:0011',
+                'name': 'Test child level 1-1'
+            }, {
+                'int': 21,
+                'id': 'HP:0021',
+                'name': 'Test child level 2-1'
+            }]
+        )
+        self.assertEqual(
+            res['set2'],
+            [{
+                'int': 12,
+                'id': 'HP:0012',
+                'name': 'Test child level 1-2'
+            }, {
+                'int': 31,
+                'id': 'HP:0031',
+                'name': 'Test child level 3'
+            }]
+        )
+        self.assertIsInstance(res['similarity'], float)
+        self.assertEqual(
+            res['similarity'],
+            0
+        )
+
+        set3 = 'HP:0031,HP:0041'
+        res2 = client.get(
+            '/terms/similarity?set1={}&set2={}&method=graphic'.format(
+                set3, set3)
+        ).json()
+        self.assertEqual(
+            res2['similarity'],
+            1
+        )
 
 
 class TermsAnnotationTests(unittest.TestCase):
@@ -324,3 +332,178 @@ class TermsAnnotationTests(unittest.TestCase):
         )
         self.assertEqual(res[1]['count'], 10)
         self.assertEqual(res[1]['enrichment'], 0.8)
+
+
+class SimilarityBatchTests(unittest.TestCase):
+    def setUp(self):
+        folder = os.path.join(
+            os.path.dirname(
+                os.path.abspath(__file__)
+            ),
+            'data'
+        )
+        _ = Ontology(data_folder=folder)
+
+    def test_batch_similarity(self):
+        data = {
+            'set1': 'HP:0031,HP:0041',
+            'other_sets': [
+                {'set2': 'HP:0012,HP:0031', 'name': 'Test1'},
+                {'set2': 'HP:0031,HP:0041', 'name': 'Test2'}
+            ]
+        }
+        response = client.post('/terms/similarity', json=data).json()
+
+        self.assertEqual(
+            [x['id'] for x in response['set1']],
+            ['HP:0031', 'HP:0041']
+        )
+
+    def test_backwards_compatible_trailing_slash(self):
+        """
+        In version 1.0.0 there was an unitended trailing slash on the
+        ``/terms/similarity`` endpoint (``/terms/similarity/``)
+        """
+        data = {
+            'set1': 'HP:0031,HP:0041',
+            'other_sets': [
+                {'set2': 'HP:0012,HP:0031', 'name': 'Test1'}
+            ]
+        }
+        response = client.post('/terms/similarity/', json=data).json()
+
+        self.assertEqual(
+            [x['id'] for x in response['set1']],
+            ['HP:0031', 'HP:0041']
+        )
+
+    def test_batch_similarity_error(self):
+        data = {
+            'set1': 'HP:0031,HP:0041,foobar',
+            'other_sets': [
+                {'set2': 'HP:0012,HP:0031', 'name': 'Test1'},
+                {'set2': 'HP:0031,HP:0041', 'name': 'Test2'}
+            ]
+        }
+        response = client.post('/terms/similarity', json=data)
+
+        self.assertEqual(
+            response.status_code,
+            400
+        )
+        self.assertEqual(
+            response.json()['detail'],
+            'Invalid HPO Term identifier in query'
+        )
+
+    def test_batch_similarity_skipping_set2(self):
+        data = {
+            'set1': 'HP:0031,HP:0041',
+            'other_sets': [
+                {'set2': 'HP:0012,HP:0031,foobar', 'name': 'Test1'},
+                {'set2': 'HP:0031,HP:0041', 'name': 'Test2'}
+            ]
+        }
+        response = client.post('/terms/similarity', json=data)
+
+        self.assertEqual(
+            response.status_code,
+            200
+        )
+
+        res = response.json()
+        self.assertEqual(
+            res['other_sets'][0]['error'],
+            'foobar'
+        )
+        self.assertIsNone(res['other_sets'][0]['similarity'])
+
+        self.assertIsNone(res['other_sets'][1]['error'])
+
+        self.assertIsNotNone(
+            res['other_sets'][1]['similarity']
+        )
+
+
+class HPOSuggestionTests(unittest.TestCase):
+    def setUp(self):
+        folder = os.path.join(
+            os.path.dirname(
+                os.path.abspath(__file__)
+            ),
+            'data'
+        )
+        _ = Ontology(data_folder=folder)
+
+    @patch('pyhpoapi.routers.terms.gene_model')
+    @patch('pyhpoapi.routers.terms.omim_model')
+    @patch('pyhpoapi.routers.terms.hpo_model_genes')
+    @patch('pyhpoapi.routers.terms.hpo_model_omim')
+    def test_hpo_suggest(
+        self,
+        mock_hpo_omim,
+        mock_hpo_gene,
+        mock_omim_model,
+        mock_gene_model,
+    ):
+        mock_gene_model.enrichment = MagicMock(
+            return_value=[{
+                'item': GeneSingleton(idx=12, name='G1'),
+                'count': 12,
+                'enrichment': 0.4
+            }])
+
+        mock_omim_model.enrichment = MagicMock(
+            return_value=[
+                {
+                    'item': OmimDisease(idx=12, name='D1'),
+                    'count': 12,
+                    'enrichment': 0.4
+                },
+                {
+                    'item': OmimDisease(idx=15, name='D2'),
+                    'count': 10,
+                    'enrichment': 0.8
+                }
+            ])
+
+        mock_hpo_gene.enrichment = MagicMock(
+            return_value=[{
+                'hpo': x,
+                'count': int(x),
+                'enrichment': int(x)/10
+            } for x in Ontology]
+        )
+
+        mock_hpo_omim.enrichment = MagicMock(
+            return_value=[{
+                'hpo': x,
+                'count': int(x),
+                'enrichment': int(x)/10
+            } for x in Ontology]
+        )
+
+        set1 = 'HP:0011,HP:0021'
+        response = client.get(f'/terms/suggest?set1={set1}')
+        self.assertEqual(response.status_code, 200)
+        res = response.json()
+        self.assertEqual(
+            len(res),
+            len(Ontology) - 2
+        )
+
+        response = client.get(
+            f'/terms/suggest?set1={set1}&n_genes=0&n_omim=0'
+        ).json()
+        self.assertEqual(
+            len(response),
+            0
+        )
+
+        response = client.get(
+            f'/terms/suggest?set1={set1}&limit=2'
+        ).json()
+        self.assertEqual(
+            len(response),
+            2
+        )

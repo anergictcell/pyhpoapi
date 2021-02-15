@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Path
-from typing import List
+from typing import List, Dict
 
 from pyhpo.set import HPOSet
 from pyhpoapi.helpers import get_hpo_term
@@ -14,9 +14,9 @@ router = APIRouter()
     response_model=models.HPO
 )
 async def HPO_term(
-        term_id=Path(..., example='HP:0000822'),
+        term_id: str = Path(..., example='HP:0000822'),
         verbose: bool = False
-):
+) -> dict:
     """
     Show info about a single HPO term.
 
@@ -48,9 +48,9 @@ async def HPO_term(
     response_model=List[models.HPO]
 )
 async def parent_terms(
-    term_id=Path(..., example='HP:0000822'),
+    term_id: str = Path(..., example='HP:0000822'),
     verbose: bool = False
-):
+) -> List[dict]:
     """
     Get all parents of an HPOterm
 
@@ -86,9 +86,9 @@ async def parent_terms(
 
 )
 async def child_terms(
-    term_id=Path(..., example='HP:0000822'),
+    term_id: str = Path(..., example='HP:0000822'),
     verbose: bool = False
-):
+) -> List[dict]:
     """
     Get all children of an HPOterm
 
@@ -123,9 +123,9 @@ async def child_terms(
     response_model=models.HPONeighbours
 )
 async def neighbour_terms(
-    term_id=Path(..., example='HP:0000822'),
+    term_id: str = Path(..., example='HP:0000822'),
     verbose: bool = False
-):
+) -> Dict[str, List[dict]]:
     """
     Get all surrounding terms of an HPOterm
 
@@ -182,8 +182,8 @@ async def neighbour_terms(
 
 )
 async def term_associated_genes(
-    term_id=Path(..., example='HP:0000822')
-):
+    term_id: str = Path(..., example='HP:0000822')
+) -> List[dict]:
     """
     Get all Genes, associated with an HPOTerm
 
@@ -216,8 +216,8 @@ async def term_associated_genes(
     response_model=List[models.Omim]
 )
 async def term_associated_OMIM_diseases(
-    term_id=Path(..., example='HP:0000822')
-):
+    term_id: str = Path(..., example='HP:0000822')
+) -> List[dict]:
     """
     Get OMIM Diseases, associated with all provided HPOTerms
 

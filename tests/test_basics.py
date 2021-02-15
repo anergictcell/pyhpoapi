@@ -46,7 +46,7 @@ class TestHelper(unittest.TestCase):
             'HP:0081'
             )
 
-    def test_invalid_query(self):
+    def test_invalid_set_query(self):
         set1 = 'HP:0041,foobar'
         response = client.get(
             '/terms/union/genes?set1={}'.format(
@@ -55,5 +55,5 @@ class TestHelper(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json(),
-            {'detail': 'Invalid query'}
+            {'detail': 'Invalid HPO Term identifier in query'}
         )

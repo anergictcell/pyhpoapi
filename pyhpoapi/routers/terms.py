@@ -1,17 +1,19 @@
 from fastapi import APIRouter, Query, HTTPException
-from typing import List
+from typing import List, Optional
 
 from pyhpo.ontology import Ontology
+from pyhpo.stats import EnrichmentModel, HPOEnrichment
+from pyhpo import HPOTerm
 
 from pyhpoapi.helpers import get_hpo_set
 from pyhpoapi import models
 
 router = APIRouter()
 
-gene_model = None
-omim_model = None
-hpo_model_genes = None
-hpo_model_omim = None
+gene_model: Optional[EnrichmentModel] = None
+omim_model: Optional[EnrichmentModel] = None
+hpo_model_genes: Optional[HPOEnrichment] = None
+hpo_model_omim: Optional[HPOEnrichment] = None
 
 
 @router.get(
@@ -26,7 +28,7 @@ async def HPO_search(
     verbose: bool = False,
     limit: int = 10,
     offset: int = 0
-):
+) -> List[dict]:
     """
     Get all HPOTerms via substring match.
     This search searches in name, alternative names and synonyms
@@ -67,7 +69,7 @@ async def HPO_search(
 )
 async def intersecting_OMIM_diseases(
     set1: str = Query(..., example='HP:0007401,HP:0010885,HP:0006530')
-):
+) -> List[dict]:
     """
     Get all OMIM Diseases, associated with several HPOTerms.
     All diseases are returned that are associated with any of the
@@ -89,9 +91,9 @@ async def intersecting_OMIM_diseases(
     array
         Array of OMIM diseases
     """
-    set1 = get_hpo_set(set1)
-    diseases = set1.omim_diseases()
-    for term in set1:
+    hposet = get_hpo_set(set1)
+    diseases = hposet.omim_diseases()
+    for term in hposet:
         diseases = diseases & term.omim_diseases
     return [
             d.toJSON()
@@ -107,7 +109,7 @@ async def intersecting_OMIM_diseases(
 )
 async def intersecting_genes(
     set1: str = Query(..., example='HP:0007401,HP:0010885,HP:0006530')
-):
+) -> List[dict]:
     """
     Get all Genes, associated with several HPOTerms.
     All genes are returned that are associated with any of the
@@ -129,9 +131,9 @@ async def intersecting_genes(
     array
         Array of Genes
     """
-    set1 = get_hpo_set(set1)
-    genes = set1.all_genes()
-    for term in set1:
+    hposet = get_hpo_set(set1)
+    genes = hposet.all_genes()
+    for term in hposet:
         genes = genes & term.genes
     return [
             g.toJSON()
@@ -147,7 +149,7 @@ async def intersecting_genes(
 )
 async def union_OMIM_diseases(
     set1: str = Query(..., example='HP:0007401,HP:0010885,HP:0006530')
-):
+) -> List[dict]:
     """
     Get all OMIM Diseases, associated with several HPOTerms.
     Only diseases are returned that are associated with all provided HPOTerms
@@ -168,8 +170,8 @@ async def union_OMIM_diseases(
     array
         Array of OMIM diseases
     """
-    set1 = get_hpo_set(set1)
-    diseases = set1.omim_diseases()
+    hposet = get_hpo_set(set1)
+    diseases = hposet.omim_diseases()
     return [
             d.toJSON()
             for d in diseases
@@ -184,7 +186,7 @@ async def union_OMIM_diseases(
 )
 async def union_genes(
     set1: str = Query(..., example='HP:0007401,HP:0010885,HP:0006530')
-):
+) -> List[dict]:
     """
     Get all Genes, associated with several HPOTerms.
     Only genes are returned that are associated with all provided HPOTerms
@@ -205,8 +207,8 @@ async def union_genes(
     array
         Array of Genes
     """
-    set1 = get_hpo_set(set1)
-    genes = set1.all_genes()
+    hposet = get_hpo_set(set1)
+    genes = hposet.all_genes()
     return [
             g.toJSON()
             for g in genes
@@ -225,7 +227,7 @@ async def terms_similarity(
     method: str = 'graphic',
     combine: str = 'funSimAvg',
     kind: str = 'omim'
-):
+) -> dict:
     """
     Similarity score of two different HPOSets
 
@@ -280,14 +282,14 @@ async def terms_similarity(
     float
         The similarity score to the other HPOSet
     """
-    set1 = get_hpo_set(set1)
-    set2 = get_hpo_set(set2)
+    hposet1 = get_hpo_set(set1)
+    hposet2 = get_hpo_set(set2)
 
     return {
-        'set1': set1.toJSON(),
-        'set2': set2.toJSON(),
-        'similarity': set1.similarity(
-            set2,
+        'set1': hposet1.toJSON(),
+        'set2': hposet2.toJSON(),
+        'similarity': hposet1.similarity(
+            hposet2,
             kind=kind,
             method=method,
             combine=combine
@@ -295,8 +297,9 @@ async def terms_similarity(
     }
 
 
+@router.post('/similarity/', include_in_schema=False)
 @router.post(
-    '/similarity/',
+    '/similarity',
     tags=['similarity'],
     response_description='Similarity scores',
     response_model=models.Batch_Similarity_Score
@@ -306,7 +309,7 @@ async def batch_similarity(
     method: str = 'graphic',
     combine: str = 'funSimAvg',
     kind: str = 'omim'
-):
+) -> dict:
     """
     Calculate similarity scores between one base and
     several other HPOSets
@@ -363,7 +366,7 @@ async def batch_similarity(
     set1 = get_hpo_set(data.set1)
     other_sets = []
     for other in data.other_sets:
-        res = {'name': other.name}
+        res = {'name': other.name, 'similarity': 0.0, 'error': None}
         try:
             set2 = get_hpo_set(other.set2)
             res['similarity'] = set1.similarity(
@@ -374,7 +377,7 @@ async def batch_similarity(
             )
         except HTTPException as ex:
             res['similarity'] = None
-            res['error'] = ex.headers['X-TermNotFound']
+            res['error'] = ex.headers['X-TermNotFound']  # type: ignore
 
         other_sets.append(res)
     return {
@@ -393,7 +396,7 @@ async def gene_enrichment(
     method: str = 'hypergeom',
     limit: int = 10,
     offset: int = 0
-):
+) -> List[dict]:
     """
     Enrichment of genes in an HPOSet
 
@@ -420,8 +423,9 @@ async def gene_enrichment(
     list of dict
         A ordered list with enriched genes
     """
-    set1 = get_hpo_set(set1)
-    res = gene_model.enrichment(method, set1)
+    assert gene_model, 'The Gene Enrichment Model is not defined'
+    hposet = get_hpo_set(set1)
+    res = gene_model.enrichment(method, hposet)
     return [{
         'gene': x['item'].toJSON(),
         'count': x['count'],
@@ -439,7 +443,7 @@ async def omim_enrichment(
     method: str = 'hypergeom',
     limit: int = 10,
     offset: int = 0
-):
+) -> List[dict]:
     """
     Enrichment of OMIM diseases in an HPOSet
 
@@ -469,8 +473,10 @@ async def omim_enrichment(
     list of dict
         A ordered list with enriched genes
     """
-    set1 = get_hpo_set(set1)
-    res = omim_model.enrichment(method, set1)
+    assert omim_model, 'The OMIM Enrichment Model is not defined'
+
+    hposet = get_hpo_set(set1)
+    res = omim_model.enrichment(method, hposet)
     return [{
         'omim': x['item'].toJSON(),
         'count': x['count'],
@@ -478,8 +484,9 @@ async def omim_enrichment(
     } for x in res[offset:(limit+offset)]]
 
 
+@router.get('/suggest/', include_in_schema=False)
 @router.get(
-    '/suggest/',
+    '/suggest',
     tags=['enrichment'],
     response_description='HPOTerm list',
     response_model=List[models.HPO]
@@ -491,7 +498,7 @@ async def hpo_suggest(
     offset: int = 0,
     n_genes: int = 5,
     n_omim: int = 5
-):
+) -> List[dict]:
     """
     Suggest 'similar' HPOterms based on a given list of Terms
 
@@ -529,48 +536,53 @@ async def hpo_suggest(
         Consider HPO terms from the Top X enriched OMIM diseases
     """
 
-    set1 = get_hpo_set(set1)
+    assert gene_model, 'The Gene Enrichment Model is not defined'
+    assert omim_model, 'The OMIM Enrichment Model is not defined'
+    assert hpo_model_genes, 'The HPO Gene Enrichment Model is not defined'
+    assert hpo_model_omim, 'The HPO OMIM Enrichment Model is not defined'
+
+    hposet = get_hpo_set(set1)
 
     if n_omim:
         omim_res = hpo_model_omim.enrichment(
             method,
-            [x['item'] for x in omim_model.enrichment(method, set1)[0:n_omim]]
+            [x['item'] for x in omim_model.enrichment(method, hposet)[0:n_omim]]
         )
     else:
         omim_res = []
     if n_genes:
         gene_res = hpo_model_genes.enrichment(
             method,
-            [x['item'] for x in gene_model.enrichment(method, set1)[0:n_genes]]
+            [x['item'] for x in gene_model.enrichment(method, hposet)[0:n_genes]]
         )
     else:
         gene_res = []
 
     res = sorted(omim_res + gene_res, key=lambda x: x['enrichment'])[offset:]
 
-    hpos = []
-    while len(hpos) < limit:
+    hpos: List[HPOTerm] = []
+    while len(hpos) < limit and len(res):
         hpo = res.pop(0)['hpo']
-        if hpo not in hpos and hpo not in set1:
+        if hpo not in hpos and hpo not in hposet:
             hpos.append(hpo)
     return [x.toJSON() for x in hpos]
 
 
+@router.get('/hierarchy/', include_in_schema=False)
 @router.get(
-    '/hierarchy/',
+    '/hierarchy',
     tags=['enrichment'],
     response_description='HPO-Hierachy list'
-
 )
 async def hierarchy_graph(
     set1: str = Query(..., example='HP:0007401,HP:0010885,HP:0006530')
-):
-    set1 = get_hpo_set(set1)
+) -> List[dict]:
+    hposet = get_hpo_set(set1)
 
     children = set()
-    for term in set1:
+    for term in hposet:
         for child in term.children:
-            if child not in set1 and child not in children:
+            if child not in hposet and child not in children:
                 children.add(term)
 
     return [{
@@ -580,4 +592,4 @@ async def hierarchy_graph(
         'imports': [t.name for t in term.children],
         'diseases': [d.name for d in term.omim_diseases],
         'genes': [g.name for g in term.genes]
-    } for term in (set1 | children)]
+    } for term in (hposet | children)]

@@ -1,11 +1,12 @@
 import os
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, AsyncMock
 
 from pyhpo.ontology import Ontology
 
 from fastapi.testclient import TestClient
 from pyhpoapi.server import main
+from pyhpoapi.models import Batch_Similarity_Score
 
 client = TestClient(main())
 
@@ -64,6 +65,37 @@ class OmimTests(unittest.TestCase):
             {'detail': 'OMIM disease does not exist'}
         )
 
+    def test_omim_batch_similarity(self):
+        data = {
+            'set1': 'HP:0021,HP:0013,HP:0031',
+            'omim_diseases': [600001, 600002]
+        }
+        response = client.post('/similarity/omim', json=data)
+        res = response.json()
+        self.assertIn('set1', res)
+        self.assertIn('other_sets', res)
+        self.assertEqual(len(res['set1']), 3)
+        self.assertEqual(len(res['other_sets']), 2)
+
+    def test_omim_batch_similarity_missing_diseases(self):
+        data = {
+            'set1': 'HP:0021,HP:0013,HP:0031',
+            'omim_diseases': [600001, 600002, 1234]
+        }
+        response = client.post('/similarity/omim', json=data)
+        res = response.json()
+        self.assertIn('set1', res)
+        self.assertIn('other_sets', res)
+        self.assertEqual(len(res['set1']), 3)
+        self.assertEqual(len(res['other_sets']), 3)
+
+        self.assertIsNone(res['other_sets'][0]['error'])
+        self.assertIsNotNone(res['other_sets'][0]['similarity'])
+        self.assertIsNone(res['other_sets'][1]['error'])
+        self.assertIsNotNone(res['other_sets'][1]['similarity'])
+        self.assertIsNotNone(res['other_sets'][2]['error'])
+        self.assertIsNone(res['other_sets'][2]['similarity'])
+
 
 class GeneTests(unittest.TestCase):
     def setUp(self):
@@ -118,3 +150,34 @@ class GeneTests(unittest.TestCase):
             res,
             {'detail': 'Gene does not exist'}
         )
+
+    def test_gene_batch_similarity(self):
+        data = {
+            'set1': 'HP:0041,HP:0031',
+            'genes': ['Gene1', 'Gene2']
+        }
+        response = client.post('/similarity/gene', json=data)
+        res = response.json()
+        self.assertIn('set1', res)
+        self.assertIn('other_sets', res)
+        self.assertEqual(len(res['set1']), 2)
+        self.assertEqual(len(res['other_sets']), 2)
+
+    def test_omim_batch_similarity_missing_diseases(self):
+        data = {
+            'set1': 'HP:0041,HP:0031',
+            'genes': ['Gene1', 'Gene2', 'FooBar']
+        }
+        response = client.post('/similarity/gene', json=data)
+        res = response.json()
+        self.assertIn('set1', res)
+        self.assertIn('other_sets', res)
+        self.assertEqual(len(res['set1']), 2)
+        self.assertEqual(len(res['other_sets']), 3)
+
+        self.assertIsNone(res['other_sets'][0]['error'])
+        self.assertIsNotNone(res['other_sets'][0]['similarity'])
+        self.assertIsNone(res['other_sets'][1]['error'])
+        self.assertIsNotNone(res['other_sets'][1]['similarity'])
+        self.assertIsNotNone(res['other_sets'][2]['error'])
+        self.assertIsNone(res['other_sets'][2]['similarity'])

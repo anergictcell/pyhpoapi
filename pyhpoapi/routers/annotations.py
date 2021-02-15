@@ -21,7 +21,7 @@ router = APIRouter()
 async def omim_disease(
     omim_id: int = Path(..., example=230800),
     verbose: bool = False
-):
+) -> dict:
     """
     Show info about an OMIM diseae
 
@@ -40,14 +40,17 @@ async def omim_disease(
     """
     try:
         res = Omim.get(omim_id).toJSON(verbose=verbose)
-    except KeyError:
+    except (KeyError, RuntimeError):
         raise HTTPException(
             status_code=404,
             detail='OMIM disease does not exist'
         )
     try:
-        res['hpo'] = [Ontology[x].toJSON() for x in res['hpo']]
-    except KeyError:
+        res['hpo'] = [
+            Ontology.get_hpo_object(int(x)).toJSON()
+            for x in res['hpo']
+        ]
+    except (KeyError, RuntimeError):
         pass
     return res
 
@@ -59,9 +62,9 @@ async def omim_disease(
     response_model=models.Gene
 )
 async def gene(
-    gene_id=Path(..., example='GBA'),
+    gene_id: str = Path(..., example='GBA'),
     verbose: bool = False
-):
+) -> dict:
     """
     Show info about an OMIM diseae
 
@@ -83,8 +86,11 @@ async def gene(
     except KeyError:
         raise HTTPException(status_code=404, detail="Gene does not exist")
     try:
-        res['hpo'] = [Ontology[x].toJSON() for x in res['hpo']]
-    except KeyError:
+        res['hpo'] = [
+            Ontology.get_hpo_object(int(x)).toJSON()
+            for x in res['hpo']
+        ]
+    except (KeyError, RuntimeError):
         pass
     return res
 
@@ -101,11 +107,11 @@ async def omim_similarity(
     method: str = 'graphic',
     combine: str = 'funSimAvg',
     kind: str = 'omim'
-):
+) -> dict:
     """
     Similarity score between one HPOSet and an OMIM Disease
     """
-    set1 = get_hpo_set(set1)
+    hposet = get_hpo_set(set1)
     try:
         disease = Omim.get(omim)
     except KeyError:
@@ -113,13 +119,13 @@ async def omim_similarity(
             status_code=404,
             detail="OMIM disease does not exist"
         )
-    set2 = HPOSet.from_queries(disease.hpo)
+    set2 = HPOSet.from_queries([int(x) for x in disease.hpo])
 
     return {
-        'set1': set1.toJSON(),
+        'set1': hposet.toJSON(),
         'set2': set2.toJSON(),
         'omim': disease.toJSON(),
-        'similarity': set1.similarity(
+        'similarity': hposet.similarity(
             set2,
             kind=kind,
             method=method,
@@ -139,7 +145,7 @@ async def batch_omim_similarity(
     method: str = 'graphic',
     combine: str = 'funSimAvg',
     kind: str = 'omim'
-):
+) -> dict:
     """
     Similarity score between one HPOSet and several OMIM Diseases
     """
@@ -182,7 +188,7 @@ async def all_omim_similarity(
     method: str = 'graphic',
     combine: str = 'funSimAvg',
     kind: str = 'omim'
-):
+) -> dict:
     """
     Calculate Similarity scores between query set and all OMIM diseases
     """
@@ -212,22 +218,22 @@ async def gene_similarity(
     method: str = 'graphic',
     combine: str = 'funSimAvg',
     kind: str = 'omim'
-):
+) -> dict:
     """
     Similarity score between one HPOSet and an OMIM Disease
     """
-    set1 = get_hpo_set(set1)
+    hposet = get_hpo_set(set1)
     try:
         actual_gene = Gene.get(gene)
     except KeyError:
         raise HTTPException(status_code=404, detail="Gene does not exist")
-    set2 = HPOSet.from_queries(actual_gene.hpo)
+    set2 = HPOSet.from_queries([int(x) for x in actual_gene.hpo])
 
     return {
-        'set1': set1.toJSON(),
+        'set1': hposet.toJSON(),
         'set2': set2.toJSON(),
         'gene': actual_gene.toJSON(),
-        'similarity': set1.similarity(
+        'similarity': hposet.similarity(
             set2,
             kind=kind,
             method=method,
@@ -247,19 +253,18 @@ async def batch_gene_similarity(
     method: str = 'graphic',
     combine: str = 'funSimAvg',
     kind: str = 'omim'
-):
+) -> dict:
     """
     Similarity score between one HPOSet and several OMIM Diseases
     """
     other_sets = []
 
     for other in data.genes:
-        actual_gene = Gene.get(other)
-
-        if actual_gene is None:
-            hpos = ''
-        else:
+        try:
+            actual_gene = Gene.get(other)
             hpos = ','.join([str(x) for x in actual_gene.hpo])
+        except KeyError:
+            hpos = ''
 
         other_sets.append(
             models.POST_HPOSet(
@@ -291,7 +296,7 @@ async def all_gene_similarity(
     method: str = 'graphic',
     combine: str = 'funSimAvg',
     kind: str = 'omim'
-):
+) -> dict:
     """
     Calculate Similarity scores between query set and all genes
     """

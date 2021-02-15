@@ -24,6 +24,7 @@ def custom_openapi_wrapper(app):
                 pyhpo.__version__
             ),
             routes=app.routes,
+            tags=config.OPENAPI_TAGS
         )
         openapi_schema["info"]["x-logo"] = {
             "url": "/logo"
@@ -33,7 +34,7 @@ def custom_openapi_wrapper(app):
     return custom_openapi
 
 
-def initialize_ontology():
+def initialize_ontology() -> None:
     _ = Ontology()
     terms.gene_model = EnrichmentModel('gene')
     terms.omim_model = EnrichmentModel('omim')
@@ -42,6 +43,7 @@ def initialize_ontology():
 
 
 def main():
+
     app = FastAPI()
 
     app.add_middleware(
