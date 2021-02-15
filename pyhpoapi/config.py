@@ -26,7 +26,7 @@ if os.path.exists(local_config):
     config.read(local_config)
 
 
-VERSION = config.get('default', 'version', fallback='1.1.0')
+VERSION = config.get('default', 'version', fallback='1.2.0')
 
 CORS_ORIGINS = config_item_list(
     config.get('default', 'cors-origins', fallback='')
