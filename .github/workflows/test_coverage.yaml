@@ -6,7 +6,7 @@ name: Complete unit tests and test coverage measurement
 on:
   push:
 
-jobs:
+test_coverage:
   build:
 
     runs-on: ubuntu-latest
