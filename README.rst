@@ -82,6 +82,7 @@ Use Docker for development
 One way to do this is to run a docker container during development
 
 .. code:: bash
+
     docker run --rm -v $(pwd):/src -p 8000:8000 -it python:3.9-slim-buster bash
 
     cd src
