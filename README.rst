@@ -9,6 +9,13 @@ Main features
 This package allows an easy setup of a REST API to interact with HPO Terms using the `PyHPO`_ package.
 
 
+API Documentation
+=================
+The REST API is also fully documented: https://centogene.github.io/pyhpoapi
+
+To see an interactive API documentation, install PyHPO-API, run the app and visit http://127.0.0.1:8000/docs
+
+
 Installation / Setup
 ====================
 
@@ -105,4 +112,4 @@ Create a virtual environment and install requirements in the virtual environment
     uvicorn --reload pyhpoapi.main:app
 
 
-.. _PyHPO: https://esbme.com/pyhpo/docs/ 
+.. _PyHPO: https://github.com/Centogene/pyhpo
