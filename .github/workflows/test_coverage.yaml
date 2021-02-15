@@ -5,6 +5,8 @@ name: Complete unit tests and test coverage measurement
 
 on:
   push:
+    branches:
+      - "*"
     tags:
       - "!*"
 
