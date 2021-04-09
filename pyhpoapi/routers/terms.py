@@ -377,7 +377,9 @@ async def batch_similarity(
             )
         except HTTPException as ex:
             res['similarity'] = None
-            res['error'] = ex.headers['X-TermNotFound']  # type: ignore
+            res['error'] = ex.headers.get(
+                'X-TermNotFound', 'Unknown error'
+            )  # type: ignore
 
         other_sets.append(res)
     return {
