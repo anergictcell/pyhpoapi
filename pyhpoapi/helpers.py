@@ -67,5 +67,6 @@ def get_hpo_set(set_query: str) -> HPOSet:
     except Exception:
         raise HTTPException(
             status_code=400,
-            detail='Invalid query'
+            detail='Invalid query',
+            headers={'X-Error': 'Invalid query provided'}
         )
