@@ -5,9 +5,9 @@ from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 from pyhpoapi.server import main
 
-from pyhpo.ontology import Ontology
+from pyhpo import Ontology
 from pyhpo.annotations import Gene, Omim
-from pyhpo.set import HPOSet
+from pyhpo import HPOSet
 
 
 client = TestClient(main())

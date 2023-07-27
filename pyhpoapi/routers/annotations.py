@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Path, Query
 
-from pyhpo.ontology import Ontology
+from pyhpo import Ontology
 from pyhpo.annotations import Gene, Omim
-from pyhpo.set import HPOSet
+from pyhpo import HPOSet
 
 from pyhpoapi.helpers import get_hpo_set
 from pyhpoapi import models

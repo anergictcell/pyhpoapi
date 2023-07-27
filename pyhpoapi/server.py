@@ -7,7 +7,12 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import FileResponse
 
 from pyhpo import Ontology
-from pyhpo.stats import EnrichmentModel, HPOEnrichment
+from pyhpo.stats import EnrichmentModel
+try:
+    from pyhpo.stats import HPOEnrichment
+except ImportError:
+    from pyhpoapi.helpers import MockHPOEnrichment as HPOEnrichment
+
 import pyhpo
 
 from pyhpoapi.routers import term, terms, annotations

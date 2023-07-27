@@ -4,7 +4,7 @@ import unittest
 from fastapi.testclient import TestClient
 from pyhpoapi.server import main
 
-from pyhpo.ontology import Ontology
+from pyhpo import Ontology
 
 
 client = TestClient(main())

@@ -1,8 +1,13 @@
 from fastapi import APIRouter, Query, HTTPException
-from typing import List, Optional
+from typing import Callable, List, Optional, TypeAlias
 
-from pyhpo.ontology import Ontology
-from pyhpo.stats import EnrichmentModel, HPOEnrichment
+from pyhpo import Ontology
+from pyhpo.stats import EnrichmentModel
+try:
+    from pyhpo.stats import HPOEnrichment
+except ImportError:
+    from pyhpoapi.helpers import MockHPOEnrichment as HPOEnrichment
+
 from pyhpo import HPOTerm
 
 from pyhpoapi.helpers import get_hpo_set

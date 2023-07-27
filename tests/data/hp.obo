@@ -1,3 +1,6 @@
+format-version: 1.2
+data-version: hp/releases/2023-06-17
+
 [Term]
 id: HP:0001
 name: Test root

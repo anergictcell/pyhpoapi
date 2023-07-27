@@ -10,6 +10,10 @@ from pyhpo import Ontology
 from pyhpo import HPOSet
 
 
+class MockHPOEnrichment:
+    def __init__(self, *args, **kwargs):
+        pass
+
 def get_hpo_term(termid: Union[int, str]) -> HPOTerm:
     """
     Convert the HPO-ID from a REST-API query parameter to an HPOTerm object
