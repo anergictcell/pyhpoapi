@@ -1,4 +1,4 @@
 hpo_id  hpo_name    ncbi_gene_id    gene_symbol disease_id
-HP:0041	-	1	Gene1	orphadata	ORPHA:1465
-HP:0031	-	1	Gene1	orphadata	ORPHA:124
-HP:0031	-	2	Gene2	orphadata	ORPHA:124
+HP:0000041	-	1	Gene1	orphadata	ORPHA:1465
+HP:0000031	-	1	Gene1	orphadata	ORPHA:124
+HP:0000031	-	2	Gene2	orphadata	ORPHA:124

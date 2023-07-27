@@ -2,9 +2,9 @@
 #date: 2020-10-13
 #HPO-version: Mock HPO
 database_id	disease_name	qualifier	hpo_id	reference	evidence	onset	frequency	sex	modifier	aspect	biocuration
-OMIM:600001	Disease 1		HP:0021	PMID:25653144	PCS	1/1	P	HPO:probinson[2020-07-23];HPO:probinson[2020-07-23]
-OMIM:600001	Disease 1		HP:0013	PMID:25653144	PCS	1/1	P	HPO:probinson[2020-07-23];HPO:probinson[2020-07-23]
-OMIM:600002	Disease 2		HP:0021	PMID:25653144	PCS	1/1	P	HPO:probinson[2020-07-23];HPO:probinson[2020-07-23]
-OMIM:600002	Disease 2		HP:0031	PMID:25653144	PCS	1/1	P	HPO:probinson[2020-07-23];HPO:probinson[2020-07-23]
-ORPHA:1	Orpha disease 1		HP:0041	ORPHA:1	TAS		HP:0040283			P	ORPHA:orphadata[2020-10-13]
-DECIPHER:1	Decipher disease 1		HP:0041	DECIPHER:1	IEA					P	HPO:skoehler[2013-05-29]
+OMIM:600001	Disease 1		HP:0000021	PMID:25653144	PCS	1/1	P	HPO:probinson[2020-07-23];HPO:probinson[2020-07-23]
+OMIM:600001	Disease 1		HP:0000013	PMID:25653144	PCS	1/1	P	HPO:probinson[2020-07-23];HPO:probinson[2020-07-23]
+OMIM:600002	Disease 2		HP:0000021	PMID:25653144	PCS	1/1	P	HPO:probinson[2020-07-23];HPO:probinson[2020-07-23]
+OMIM:600002	Disease 2		HP:0000031	PMID:25653144	PCS	1/1	P	HPO:probinson[2020-07-23];HPO:probinson[2020-07-23]
+ORPHA:1	Orpha disease 1		HP:0000041	ORPHA:1	TAS		HP:0000040283			P	ORPHA:orphadata[2020-10-13]
+DECIPHER:1	Decipher disease 1		HP:0000041	DECIPHER:1	IEA					P	HPO:skoehler[2013-05-29]

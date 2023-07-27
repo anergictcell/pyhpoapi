@@ -29,7 +29,7 @@ class TestHelper(unittest.TestCase):
         _ = Ontology(data_folder=folder)
 
     def test_invalid_hpo_terms(self):
-        set1 = 'HP:0041,HP:0081'
+        set1 = 'HP:0000041,HP:0000081'
         response = client.get(
             '/terms/union/genes?set1={}'.format(
                 set1)
@@ -45,11 +45,11 @@ class TestHelper(unittest.TestCase):
         )
         self.assertEqual(
             response.headers['x-termnotfound'],
-            'HP:0081'
+            'HP:0000081'
             )
 
     def test_invalid_set_query(self):
-        set1 = 'HP:0041,foobar'
+        set1 = 'HP:0000041,foobar'
         response = client.get(
             '/terms/union/genes?set1={}'.format(
                 set1)
@@ -72,7 +72,7 @@ class TestSetGetter(unittest.TestCase):
         _ = Ontology(data_folder=folder)
 
     def test_set(self):
-        res = helpers.get_hpo_set("HP:0012,HP:0013")
+        res = helpers.get_hpo_set("HP:0000012,HP:0000013")
         self.assertEqual(len(res), 2)
 
     def test_set_with_ints(self):
@@ -80,27 +80,27 @@ class TestSetGetter(unittest.TestCase):
         self.assertEqual(len(res), 2)
 
     def test_set_with_spaces(self):
-        res = helpers.get_hpo_set("HP:0012, HP:0013 ,HP:0021")
+        res = helpers.get_hpo_set("HP:0000012, HP:0000013 ,HP:0000021")
         self.assertEqual(len(res), 3)
 
     def test_set_missing_term(self):
         with self.assertRaises(HTTPException) as err:
-            helpers.get_hpo_set("HP:0012,HP:00130")
+            helpers.get_hpo_set("HP:0000012,HP:00000130")
         assert err.exception.headers
-        self.assertEqual(err.exception.headers.get("X-TermNotFound"), "HP:00130")
+        self.assertEqual(err.exception.headers.get("X-TermNotFound"), "HP:00000130")
         
     def test_set_invalid_term(self):
         with self.assertRaises(HTTPException) as err:
-            helpers.get_hpo_set("HP:0012,HP:x13")
+            helpers.get_hpo_set("HP:0000012,HP:x13")
         assert err.exception.headers
         self.assertEqual(err.exception.headers.get("X-TermNotFound"), "HP:x13")
 
         with self.assertRaises(HTTPException) as err:
-            helpers.get_hpo_set("HP:0012,foobar")
+            helpers.get_hpo_set("HP:0000012,foobar")
         assert err.exception.headers
         self.assertEqual(err.exception.headers.get("X-TermNotFound"), "foobar")
 
         with self.assertRaises(HTTPException) as err:
-            helpers.get_hpo_set("HP:0012,122")
+            helpers.get_hpo_set("HP:0000012,122")
         assert err.exception.headers
         self.assertEqual(err.exception.headers.get("X-TermNotFound"), "122")

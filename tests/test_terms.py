@@ -63,8 +63,8 @@ class TermsAPITests(unittest.TestCase):
         )
 
     def test_similarity(self):
-        set1 = 'HP:0011,HP:0021'
-        set2 = 'HP:0012,HP:0031'
+        set1 = 'HP:0000011,HP:0000021'
+        set2 = 'HP:0000012,HP:0000031'
         response = client.get(
             '/terms/similarity?set1={}&set2={}'.format(
                 set1, set2)
@@ -78,11 +78,11 @@ class TermsAPITests(unittest.TestCase):
             res['set1'],
             [{
                 'int': 11,
-                'id': 'HP:0011',
+                'id': 'HP:0000011',
                 'name': 'Test child level 1-1'
             }, {
                 'int': 21,
-                'id': 'HP:0021',
+                'id': 'HP:0000021',
                 'name': 'Test child level 2-1'
             }]
         )
@@ -90,11 +90,11 @@ class TermsAPITests(unittest.TestCase):
             res['set2'],
             [{
                 'int': 12,
-                'id': 'HP:0012',
+                'id': 'HP:0000012',
                 'name': 'Test child level 1-2'
             }, {
                 'int': 31,
-                'id': 'HP:0031',
+                'id': 'HP:0000031',
                 'name': 'Test child level 3'
             }]
         )
@@ -104,7 +104,7 @@ class TermsAPITests(unittest.TestCase):
             0
         )
 
-        set3 = 'HP:0031,HP:0041'
+        set3 = 'HP:0000031,HP:0000041'
         res2 = client.get(
             '/terms/similarity?set1={}&set2={}&method=graphic'.format(
                 set3, set3)
@@ -126,7 +126,7 @@ class TermsAnnotationTests(unittest.TestCase):
         _ = Ontology(data_folder=folder)
 
     def test_intersecting_OMIM_diseases(self):
-        set1 = 'HP:0013,HP:0021'
+        set1 = 'HP:0000013,HP:0000021'
         response = client.get(
             '/terms/intersect/omim?set1={}'.format(
                 set1)
@@ -138,7 +138,7 @@ class TermsAnnotationTests(unittest.TestCase):
         )
 
     def test_union_OMIM_diseases(self):
-        set1 = 'HP:0013,HP:0021'
+        set1 = 'HP:0000013,HP:0000021'
         response = client.get(
             '/terms/union/omim?set1={}'.format(
                 set1)
@@ -155,7 +155,7 @@ class TermsAnnotationTests(unittest.TestCase):
         )
 
     def test_intersecting_genes(self):
-        set1 = 'HP:0041,HP:0031'
+        set1 = 'HP:0000041,HP:0000031'
         response = client.get(
             '/terms/intersect/genes?set1={}'.format(
                 set1)
@@ -167,7 +167,7 @@ class TermsAnnotationTests(unittest.TestCase):
         )
 
     def test_union_genes(self):
-        set1 = 'HP:0041,HP:0031'
+        set1 = 'HP:0000041,HP:0000031'
         response = client.get(
             '/terms/union/genes?set1={}'.format(
                 set1)
@@ -189,7 +189,7 @@ class TermsAnnotationTests(unittest.TestCase):
         Assuming the gene_model.enrichment method is propery tested
         in the upstream pyhpo package
         """
-        set1 = 'HP:0041,HP:0031'
+        set1 = 'HP:0000041,HP:0000031'
         mock_model.enrichment = MagicMock(
             return_value=[{
                 'item': Gene(12, symbol='G1'),
@@ -220,7 +220,7 @@ class TermsAnnotationTests(unittest.TestCase):
         Assuming the gene_model.enrichment method is propery tested
         in the upstream pyhpo package
         """
-        set1 = 'HP:0041,HP:0031'
+        set1 = 'HP:0000041,HP:0000031'
         mock_model.enrichment = MagicMock(
             return_value=[
                 {
@@ -264,7 +264,7 @@ class TermsAnnotationTests(unittest.TestCase):
         Assuming the gene_model.enrichment method is propery tested
         in the upstream pyhpo package
         """
-        set1 = 'HP:0041,HP:0031'
+        set1 = 'HP:0000041,HP:0000031'
         mock_model.enrichment = MagicMock(
             return_value=[{
                 'item': Omim(12, name='D1'),
@@ -295,7 +295,7 @@ class TermsAnnotationTests(unittest.TestCase):
         Assuming the gene_model.enrichment method is propery tested
         in the upstream pyhpo package
         """
-        set1 = 'HP:0041,HP:0031'
+        set1 = 'HP:0000041,HP:0000031'
         mock_model.enrichment = MagicMock(
             return_value=[
                 {
@@ -346,17 +346,17 @@ class SimilarityBatchTests(unittest.TestCase):
 
     def test_batch_similarity(self):
         data = {
-            'set1': 'HP:0031,HP:0041',
+            'set1': 'HP:0000031,HP:0000041',
             'other_sets': [
-                {'set2': 'HP:0012,HP:0031', 'name': 'Test1'},
-                {'set2': 'HP:0031,HP:0041', 'name': 'Test2'}
+                {'set2': 'HP:0000012,HP:0000031', 'name': 'Test1'},
+                {'set2': 'HP:0000031,HP:0000041', 'name': 'Test2'}
             ]
         }
         response = client.post('/terms/similarity', json=data).json()
 
         self.assertEqual(
             [x['id'] for x in response['set1']],
-            ['HP:0031', 'HP:0041']
+            ['HP:0000031', 'HP:0000041']
         )
 
 
@@ -366,24 +366,24 @@ class SimilarityBatchTests(unittest.TestCase):
         ``/terms/similarity`` endpoint (``/terms/similarity/``)
         """
         data = {
-            'set1': 'HP:0031,HP:0041',
+            'set1': 'HP:0000031,HP:0000041',
             'other_sets': [
-                {'set2': 'HP:0012,HP:0031', 'name': 'Test1'}
+                {'set2': 'HP:0000012,HP:0000031', 'name': 'Test1'}
             ]
         }
         response = client.post('/terms/similarity/', json=data).json()
 
         self.assertEqual(
             [x['id'] for x in response['set1']],
-            ['HP:0031', 'HP:0041']
+            ['HP:0000031', 'HP:0000041']
         )
 
     def test_batch_similarity_error(self):
         data = {
-            'set1': 'HP:0031,HP:0041,foobar',
+            'set1': 'HP:0000031,HP:0000041,foobar',
             'other_sets': [
-                {'set2': 'HP:0012,HP:0031', 'name': 'Test1'},
-                {'set2': 'HP:0031,HP:0041', 'name': 'Test2'}
+                {'set2': 'HP:0000012,HP:0000031', 'name': 'Test1'},
+                {'set2': 'HP:0000031,HP:0000041', 'name': 'Test2'}
             ]
         }
         response = client.post('/terms/similarity', json=data)
@@ -399,10 +399,10 @@ class SimilarityBatchTests(unittest.TestCase):
 
     def test_batch_similarity_invalid_method(self):
         data = {
-            'set1': 'HP:0031,HP:0041',
+            'set1': 'HP:0000031,HP:0000041',
             'other_sets': [
-                {'set2': 'HP:0012,HP:0031', 'name': 'Test1'},
-                {'set2': 'HP:0031,HP:0041', 'name': 'Test2'}
+                {'set2': 'HP:0000012,HP:0000031', 'name': 'Test1'},
+                {'set2': 'HP:0000031,HP:0000041', 'name': 'Test2'}
             ]
         }
         response = client.post('/terms/similarity?method=invalid', json=data)
@@ -418,10 +418,10 @@ class SimilarityBatchTests(unittest.TestCase):
 
     def test_batch_similarity_invalid_combine(self):
         data = {
-            'set1': 'HP:0031,HP:0041',
+            'set1': 'HP:0000031,HP:0000041',
             'other_sets': [
-                {'set2': 'HP:0012,HP:0031', 'name': 'Test1'},
-                {'set2': 'HP:0031,HP:0041', 'name': 'Test2'}
+                {'set2': 'HP:0000012,HP:0000031', 'name': 'Test1'},
+                {'set2': 'HP:0000031,HP:0000041', 'name': 'Test2'}
             ]
         }
         response = client.post('/terms/similarity?combine=invalid', json=data)
@@ -437,10 +437,10 @@ class SimilarityBatchTests(unittest.TestCase):
 
     def test_batch_similarity_invalid_information_content(self):
         data = {
-            'set1': 'HP:0031,HP:0041',
+            'set1': 'HP:0000031,HP:0000041',
             'other_sets': [
-                {'set2': 'HP:0012,HP:0031', 'name': 'Test1'},
-                {'set2': 'HP:0031,HP:0041', 'name': 'Test2'}
+                {'set2': 'HP:0000012,HP:0000031', 'name': 'Test1'},
+                {'set2': 'HP:0000031,HP:0000041', 'name': 'Test2'}
             ]
         }
         response = client.post('/terms/similarity?kind=invalid', json=data)
@@ -456,10 +456,10 @@ class SimilarityBatchTests(unittest.TestCase):
 
     def test_batch_similarity_skipping_set2(self):
         data = {
-            'set1': 'HP:0031,HP:0041',
+            'set1': 'HP:0000031,HP:0000041',
             'other_sets': [
-                {'set2': 'HP:0012,HP:0031,foobar', 'name': 'Test1'},
-                {'set2': 'HP:0031,HP:0041', 'name': 'Test2'}
+                {'set2': 'HP:0000012,HP:0000031,foobar', 'name': 'Test1'},
+                {'set2': 'HP:0000031,HP:0000041', 'name': 'Test2'}
             ]
         }
         response = client.post('/terms/similarity', json=data)
@@ -541,7 +541,7 @@ class HPOSuggestionTests(unittest.TestCase):
             } for x in Ontology]
         )
 
-        set1 = 'HP:0011,HP:0021'
+        set1 = 'HP:0000011,HP:0000021'
         response = client.get(f'/terms/suggest?set1={set1}')
         self.assertEqual(response.status_code, 200)
         res = response.json()
@@ -579,7 +579,7 @@ class HierarchyTests(unittest.TestCase):
         _ = Ontology(data_folder=folder)
 
     def test_hierarchy(self):
-        set1 = 'HP:0012,HP:0013,HP:0021'
+        set1 = 'HP:0000012,HP:0000013,HP:0000021'
         res = client.get(f'/terms/hierarchy?set1={set1}').json()
 
         self.assertEqual(len(res), 4)
