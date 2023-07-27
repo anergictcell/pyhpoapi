@@ -20,8 +20,8 @@ def make_terms():
     child_1_2.id = 'HP:0012'
     child_1_2.name = 'Test child level 1-2'
     child_1_2.is_a = root.id
-    child_1_2.synonym = '"another name"'
-    child_1_2.synonym = '"third name"'
+    child_1_2.synonym = ['"another name"']
+    child_1_2.synonym = ['"third name"']
     child_1_2.comment = 'Some comment'
     child_1_2.definition = 'Some definition'
 

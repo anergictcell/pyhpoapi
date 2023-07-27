@@ -1,1 +1,5 @@
 requests
+coverage
+mypy
+flake8
+ruff

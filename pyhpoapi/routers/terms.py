@@ -20,7 +20,7 @@ hpo_model_omim: Optional[HPOEnrichment] = None
     '/search/{query}',
     tags=['terms'],
     response_description='List of HPOTerms',
-    response_model=List[models.HPO],
+    response_model=List[models.HpoTerm],
     response_model_exclude_none=True
 )
 async def HPO_search(
@@ -219,7 +219,7 @@ async def union_genes(
     '/similarity',
     tags=['similarity'],
     response_description='Similarity score',
-    response_model=models.Similarity_Score
+    response_model=models.SimilarityScore
 )
 async def terms_similarity(
     set1: str = Query(..., example='HP:0007401,HP:0010885,HP:0006530'),
@@ -302,10 +302,10 @@ async def terms_similarity(
     '/similarity',
     tags=['similarity'],
     response_description='Similarity scores',
-    response_model=models.Batch_Similarity_Score
+    response_model=models.SimilarityScore_Batch
 )
 async def batch_similarity(
-    data: models.POST_Batch,
+    data: models.PostBody_HpoSets,
     method: str = 'graphic',
     combine: str = 'funSimAvg',
     kind: str = 'omim'
@@ -322,7 +322,7 @@ async def batch_similarity(
 
     Parameters
     ----------
-    data: POST_Batch
+    data: PostBody_HpoSets
 
     kind: str, default ``None``
         Which kind of information content should be calculated.
@@ -377,9 +377,27 @@ async def batch_similarity(
             )
         except HTTPException as ex:
             res['similarity'] = None
-            res['error'] = ex.headers.get(
-                'X-TermNotFound', 'Unknown error'
-            )  # type: ignore
+            if ex.headers:
+                res['error'] = ex.headers.get(
+                    'X-TermNotFound', 'Unknown error'
+                )
+            else:
+                res['error'] = 'Unknown error'
+        except NotImplementedError:
+            raise HTTPException(
+                status_code=400,
+                detail="The similarity method is not properly implemented"
+                )
+        except RuntimeError:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid `method` or `combine` parameter"
+                )
+        except AttributeError:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid information content kind specified"
+                )
 
         other_sets.append(res)
     return {
@@ -491,7 +509,7 @@ async def omim_enrichment(
     '/suggest',
     tags=['enrichment'],
     response_description='HPOTerm list',
-    response_model=List[models.HPO]
+    response_model=List[models.HpoTerm]
 )
 async def hpo_suggest(
     set1: str = Query(..., example='HP:0007401,HP:0010885,HP:0006530'),
@@ -585,7 +603,7 @@ async def hierarchy_graph(
     for term in hposet:
         for child in term.children:
             if child not in hposet and child not in children:
-                children.add(term)
+                children.add(child)
 
     return [{
         'name': term.name,

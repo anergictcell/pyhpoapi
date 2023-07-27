@@ -1,4 +1,4 @@
-#Format: HPO-id<tab>HPO label<tab>entrez-gene-id<tab>entrez-gene-symbol<tab>Additional Info from G-D source<tab>G-D source<tab>disease-ID for link
+hpo_id  hpo_name    ncbi_gene_id    gene_symbol disease_id
 HP:0041	-	1	Gene1	orphadata	ORPHA:1465
 HP:0031	-	1	Gene1	orphadata	ORPHA:124
 HP:0031	-	2	Gene2	orphadata	ORPHA:124

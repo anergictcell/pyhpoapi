@@ -1,5 +1,5 @@
 scipy
-pyhpo
+pyhpo>=3.2
 fastapi
 uvicorn
 aiofiles

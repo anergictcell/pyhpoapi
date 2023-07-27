@@ -11,8 +11,6 @@ This package allows an easy setup of a REST API to interact with HPO Terms using
 
 API Documentation
 =================
-The REST API is also fully documented: https://centogene.github.io/pyhpoapi
-
 To see an interactive API documentation, install PyHPO-API, run the app and visit http://127.0.0.1:8000/docs
 
 
@@ -102,7 +100,7 @@ Create a virtual environment and install requirements in the virtual environment
 
 .. code:: bash
 
-    virtualenv --python pyhon3 venv_pyhpoapi
+    virtualenv venv_pyhpoapi
     source venv_pyhpoapi/bin/activate
 
     pip3 install -r requirements.txt

@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from pyhpoapi.server import main
 
 from pyhpo.ontology import Ontology
-from pyhpo.annotations import GeneSingleton, OmimDisease
+from pyhpo.annotations import Gene, Omim
 from pyhpo.set import HPOSet
 
 
@@ -99,7 +99,7 @@ class TermsAPITests(unittest.TestCase):
             }]
         )
         self.assertIsInstance(res['similarity'], float)
-        self.assertEqual(
+        self.assertGreater(
             res['similarity'],
             0
         )
@@ -192,7 +192,7 @@ class TermsAnnotationTests(unittest.TestCase):
         set1 = 'HP:0041,HP:0031'
         mock_model.enrichment = MagicMock(
             return_value=[{
-                'item': GeneSingleton(idx=12, name='G1'),
+                'item': Gene(12, symbol='G1'),
                 'count': 12,
                 'enrichment': 0.4
             }])
@@ -224,12 +224,12 @@ class TermsAnnotationTests(unittest.TestCase):
         mock_model.enrichment = MagicMock(
             return_value=[
                 {
-                    'item': GeneSingleton(idx=12, name='G1'),
+                    'item': Gene(12, symbol='G1'),
                     'count': 12,
                     'enrichment': 0.4
                 },
                 {
-                    'item': GeneSingleton(idx=15, name='G2'),
+                    'item': Gene(15, symbol='G2'),
                     'count': 10,
                     'enrichment': 0.8
                 }
@@ -267,7 +267,7 @@ class TermsAnnotationTests(unittest.TestCase):
         set1 = 'HP:0041,HP:0031'
         mock_model.enrichment = MagicMock(
             return_value=[{
-                'item': OmimDisease(idx=12, name='D1'),
+                'item': Omim(12, name='D1'),
                 'count': 12,
                 'enrichment': 0.4
             }])
@@ -299,12 +299,12 @@ class TermsAnnotationTests(unittest.TestCase):
         mock_model.enrichment = MagicMock(
             return_value=[
                 {
-                    'item': OmimDisease(idx=12, name='D1'),
+                    'item': Omim(12, name='D1'),
                     'count': 12,
                     'enrichment': 0.4
                 },
                 {
-                    'item': OmimDisease(idx=15, name='D2'),
+                    'item': Omim(15, name='D2'),
                     'count': 10,
                     'enrichment': 0.8
                 }
@@ -359,6 +359,7 @@ class SimilarityBatchTests(unittest.TestCase):
             ['HP:0031', 'HP:0041']
         )
 
+
     def test_backwards_compatible_trailing_slash(self):
         """
         In version 1.0.0 there was an unitended trailing slash on the
@@ -394,6 +395,63 @@ class SimilarityBatchTests(unittest.TestCase):
         self.assertEqual(
             response.json()['detail'],
             'Invalid HPO Term identifier in query'
+        )
+
+    def test_batch_similarity_invalid_method(self):
+        data = {
+            'set1': 'HP:0031,HP:0041',
+            'other_sets': [
+                {'set2': 'HP:0012,HP:0031', 'name': 'Test1'},
+                {'set2': 'HP:0031,HP:0041', 'name': 'Test2'}
+            ]
+        }
+        response = client.post('/terms/similarity?method=invalid', json=data)
+
+        self.assertEqual(
+            response.status_code,
+            400
+        )
+        self.assertEqual(
+            response.json()['detail'],
+            'Invalid `method` or `combine` parameter'
+        )
+
+    def test_batch_similarity_invalid_combine(self):
+        data = {
+            'set1': 'HP:0031,HP:0041',
+            'other_sets': [
+                {'set2': 'HP:0012,HP:0031', 'name': 'Test1'},
+                {'set2': 'HP:0031,HP:0041', 'name': 'Test2'}
+            ]
+        }
+        response = client.post('/terms/similarity?combine=invalid', json=data)
+
+        self.assertEqual(
+            response.status_code,
+            400
+        )
+        self.assertEqual(
+            response.json()['detail'],
+            'Invalid `method` or `combine` parameter'
+        )
+
+    def test_batch_similarity_invalid_information_content(self):
+        data = {
+            'set1': 'HP:0031,HP:0041',
+            'other_sets': [
+                {'set2': 'HP:0012,HP:0031', 'name': 'Test1'},
+                {'set2': 'HP:0031,HP:0041', 'name': 'Test2'}
+            ]
+        }
+        response = client.post('/terms/similarity?kind=invalid', json=data)
+
+        self.assertEqual(
+            response.status_code,
+            400
+        )
+        self.assertEqual(
+            response.json()['detail'],
+            'Invalid information content kind specified'
         )
 
     def test_batch_similarity_skipping_set2(self):
@@ -448,7 +506,7 @@ class HPOSuggestionTests(unittest.TestCase):
     ):
         mock_gene_model.enrichment = MagicMock(
             return_value=[{
-                'item': GeneSingleton(idx=12, name='G1'),
+                'item': Gene(12, symbol='G1'),
                 'count': 12,
                 'enrichment': 0.4
             }])
@@ -456,12 +514,12 @@ class HPOSuggestionTests(unittest.TestCase):
         mock_omim_model.enrichment = MagicMock(
             return_value=[
                 {
-                    'item': OmimDisease(idx=12, name='D1'),
+                    'item': Omim(12, name='D1'),
                     'count': 12,
                     'enrichment': 0.4
                 },
                 {
-                    'item': OmimDisease(idx=15, name='D2'),
+                    'item': Omim(15, name='D2'),
                     'count': 10,
                     'enrichment': 0.8
                 }
@@ -507,3 +565,22 @@ class HPOSuggestionTests(unittest.TestCase):
             len(response),
             2
         )
+
+
+
+class HierarchyTests(unittest.TestCase):
+    def setUp(self):
+        folder = os.path.join(
+            os.path.dirname(
+                os.path.abspath(__file__)
+            ),
+            'data'
+        )
+        _ = Ontology(data_folder=folder)
+
+    def test_hierarchy(self):
+        set1 = 'HP:0012,HP:0013,HP:0021'
+        res = client.get(f'/terms/hierarchy?set1={set1}').json()
+
+        self.assertEqual(len(res), 4)
+

@@ -1,7 +1,7 @@
 #description: Mock HPO-Omim relations
 #date: 2020-10-13
 #HPO-version: Mock HPO
-DatabaseID	DiseaseName	Qualifier	HPO_ID	Reference	Evidence	Onset	Frequency	Sex Modifier	Aspect	Biocuration
+database_id	disease_name	qualifier	hpo_id	reference	evidence	onset	frequency	sex	modifier	aspect	biocuration
 OMIM:600001	Disease 1		HP:0021	PMID:25653144	PCS	1/1	P	HPO:probinson[2020-07-23];HPO:probinson[2020-07-23]
 OMIM:600001	Disease 1		HP:0013	PMID:25653144	PCS	1/1	P	HPO:probinson[2020-07-23];HPO:probinson[2020-07-23]
 OMIM:600002	Disease 2		HP:0021	PMID:25653144	PCS	1/1	P	HPO:probinson[2020-07-23];HPO:probinson[2020-07-23]

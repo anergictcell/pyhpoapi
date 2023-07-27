@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Path
 from typing import List, Dict
 
-from pyhpo.set import HPOSet
+from pyhpo import HPOSet
 from pyhpoapi.helpers import get_hpo_term
 from pyhpoapi import models
 
@@ -10,8 +10,8 @@ router = APIRouter()
 
 @router.get(
     '/{term_id}',
-    response_description='HPOTerm object',
-    response_model=models.HPO
+    response_description='One HPO term',
+    response_model=models.HpoTerm
 )
 async def HPO_term(
         term_id: str = Path(..., example='HP:0000822'),
@@ -39,13 +39,15 @@ async def HPO_term(
         HPOTerm as JSON object
 
     """
-    return get_hpo_term(term_id).toJSON(bool(verbose))
+    term = get_hpo_term(term_id).toJSON(bool(verbose))
+    res = models.HpoTerm(**term)
+    return res.model_dump()
 
 
 @router.get(
     '/{term_id}/parents',
-    response_description='HPOTerm object',
-    response_model=List[models.HPO]
+    response_description='List of HPO terms',
+    response_model=List[models.HpoTerm]
 )
 async def parent_terms(
     term_id: str = Path(..., example='HP:0000822'),
@@ -81,8 +83,8 @@ async def parent_terms(
 
 @router.get(
     '/{term_id}/children',
-    response_description='HPOTerm object',
-    response_model=List[models.HPO]
+    response_description='List of HPO terms',
+    response_model=List[models.HpoTerm]
 
 )
 async def child_terms(
@@ -119,8 +121,8 @@ async def child_terms(
 
 @router.get(
     '/{term_id}/neighbours',
-    response_description='HPOTerm object',
-    response_model=models.HPONeighbours
+    response_description='The neighouring HPO terms',
+    response_model=models.HpoNeighborTerms
 )
 async def neighbour_terms(
     term_id: str = Path(..., example='HP:0000822'),

@@ -5,9 +5,9 @@ from typing import Union
 
 from fastapi import HTTPException
 
-from pyhpo.term import HPOTerm
-from pyhpo.ontology import Ontology
-from pyhpo.set import HPOSet
+from pyhpo import HPOTerm
+from pyhpo import Ontology
+from pyhpo import HPOSet
 
 
 def get_hpo_term(termid: Union[int, str]) -> HPOTerm:
@@ -35,7 +35,13 @@ def get_hpo_term(termid: Union[int, str]) -> HPOTerm:
         raise HTTPException(
             status_code=404,
             detail='HPO Term does not exist',
-            headers={'X-TermNotFound': termid}
+            headers={'X-TermNotFound': f"{termid}"}
+        )
+    except (TypeError, ValueError):
+        raise HTTPException(
+            status_code=400,
+            detail='Invalid HPO identifier',
+            headers={'X-TermNotFound': f"{termid}"}
         )
 
 
@@ -51,10 +57,16 @@ def get_hpo_set(set_query: str) -> HPOSet:
     Returns
     -------
     HPOSet
+
+    Raises
+    ------
+    HTTPException
+        All exceptions fall back to HTTPException and will include an error
+        message in the header (either ``X-TermNotFound`` or ``X-Error``)    .
     """
     try:
         return HPOSet([
-            get_hpo_term(x)
+            get_hpo_term(x.strip())
             for x in set_query.split(',')
         ])
     except HTTPException as ex:

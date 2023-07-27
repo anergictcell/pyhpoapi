@@ -98,8 +98,8 @@ async def gene(
 @router.get(
     '/similarity/omim',
     tags=['similarity', 'terms', 'disease'],
-    response_description='Similarity score',
-    response_model=models.Similarity_Score_OMIM
+    response_description='Similarity score for OMIM Diseases',
+    response_model=models.SimilarityScore_Omim
     )
 async def omim_similarity(
     set1: str = Query(..., example='HP:0007401,HP:0010885,HP:0006530'),
@@ -138,10 +138,10 @@ async def omim_similarity(
     '/similarity/omim',
     tags=['similarity', 'terms', 'disease'],
     response_description='Similarity score',
-    response_model=models.Batch_Similarity_Score
+    response_model=models.SimilarityScore_Batch
     )
 async def batch_omim_similarity(
-    data: models.POST_OMIM_Batch,
+    data: models.PostBody_Similarity_Omim,
     method: str = 'graphic',
     combine: str = 'funSimAvg',
     kind: str = 'omim'
@@ -159,14 +159,14 @@ async def batch_omim_similarity(
             hpos = ''
 
         other_sets.append(
-            models.POST_HPOSet(
+            models.NamedHpoSet(
                 set2=hpos,
-                name=other
+                name=str(other)
             )
         )
 
     res = await terms.batch_similarity(
-        data=models.POST_Batch(
+        data=models.PostBody_HpoSets(
             set1=data.set1,
             other_sets=other_sets
             ),
@@ -181,7 +181,7 @@ async def batch_omim_similarity(
     '/similarity/omim/all',
     tags=['similarity', 'terms', 'disease'],
     response_description='Similarity score',
-    response_model=models.Batch_Similarity_Score
+    response_model=models.SimilarityScore_Batch
     )
 async def all_omim_similarity(
     set1: str = Query(..., example='HP:0007401,HP:0010885,HP:0006530'),
@@ -193,7 +193,7 @@ async def all_omim_similarity(
     Calculate Similarity scores between query set and all OMIM diseases
     """
 
-    data = models.POST_OMIM_Batch(
+    data = models.PostBody_Similarity_Omim(
         set1=set1,
         omim_diseases=[x.id for x in Ontology.omim_diseases]
     )
@@ -209,8 +209,8 @@ async def all_omim_similarity(
 @router.get(
     '/similarity/gene',
     tags=['similarity', 'terms', 'disease'],
-    response_description='Similarity score',
-    response_model=models.Similarity_Score_Gene
+    response_description='Similarity score for genes',
+    response_model=models.SimilarityScore_Gene
     )
 async def gene_similarity(
     set1: str = Query(..., example='HP:0007401,HP:0010885,HP:0006530'),
@@ -246,10 +246,10 @@ async def gene_similarity(
     '/similarity/gene',
     tags=['similarity', 'terms', 'gene'],
     response_description='Similarity score',
-    response_model=models.Batch_Similarity_Score
+    response_model=models.SimilarityScore_Batch
     )
 async def batch_gene_similarity(
-    data: models.POST_Gene_Batch,
+    data: models.PostBody_Similarity_Gene,
     method: str = 'graphic',
     combine: str = 'funSimAvg',
     kind: str = 'omim'
@@ -267,14 +267,14 @@ async def batch_gene_similarity(
             hpos = ''
 
         other_sets.append(
-            models.POST_HPOSet(
+            models.NamedHpoSet(
                 set2=hpos,
-                name=actual_gene.name
+                name=other
             )
         )
 
     res = await terms.batch_similarity(
-        data=models.POST_Batch(
+        data=models.PostBody_HpoSets(
             set1=data.set1,
             other_sets=other_sets
             ),
@@ -289,7 +289,7 @@ async def batch_gene_similarity(
     '/similarity/gene/all',
     tags=['similarity', 'terms', 'gene'],
     response_description='Similarity score',
-    response_model=models.Batch_Similarity_Score
+    response_model=models.SimilarityScore_Batch
     )
 async def all_gene_similarity(
     set1: str = Query(..., example='HP:0007401,HP:0010885,HP:0006530'),
@@ -301,9 +301,9 @@ async def all_gene_similarity(
     Calculate Similarity scores between query set and all genes
     """
 
-    data = models.POST_Gene_Batch(
+    data = models.PostBody_Similarity_Gene(
         set1=set1,
-        genes=[x.id for x in Ontology.genes]
+        genes=[x.name for x in Ontology.genes]
     )
     res = await batch_gene_similarity(
         data=data,

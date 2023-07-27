@@ -1,17 +1,19 @@
 import os
+import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import FileResponse
 
-from pyhpo.ontology import Ontology
+from pyhpo import Ontology
 from pyhpo.stats import EnrichmentModel, HPOEnrichment
 import pyhpo
 
 from pyhpoapi.routers import term, terms, annotations
 from pyhpoapi import config
 
+logger = logging.getLogger("uvicorn.error")
 
 def custom_openapi_wrapper(app):
     def custom_openapi():
@@ -35,7 +37,10 @@ def custom_openapi_wrapper(app):
 
 
 def initialize_ontology() -> None:
-    _ = Ontology()
+    data_dir = os.environ.get("PYHPOAPI_DATA_DIR", None)
+    logger.debug(f"Loading Ontology from {data_dir}")
+
+    _ = Ontology(data_dir)
     terms.gene_model = EnrichmentModel('gene')
     terms.omim_model = EnrichmentModel('omim')
     terms.hpo_model_genes = HPOEnrichment('gene')

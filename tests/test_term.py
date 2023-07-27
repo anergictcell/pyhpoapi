@@ -34,6 +34,7 @@ class TermAPITests(unittest.TestCase):
                 'name': 'Test child level 1-1',
                 'comment': None,
                 'definition': None,
+                'synonym': None,
                 'ic': None,
                 'is_a': None,
                 'xref': None
@@ -118,12 +119,14 @@ class TermAPITests(unittest.TestCase):
             200
         )
         res = response.json()
+        res.sort(key=lambda x: x['int'])
         self.assertIsInstance(res, list)
         self.assertEqual(len(res), 2)
+
         term = res[0]
-        self.assertEqual(term['id'], 'HP:0021')
-        self.assertEqual(term['int'], 21)
-        self.assertEqual(term['name'], 'Test child level 2-1')
+        self.assertEqual(term['id'], 'HP:0012')
+        self.assertEqual(term['int'], 12)
+        self.assertEqual(term['name'], 'Test child level 1-2')
         self.assertIsNone(term['comment'])
         self.assertIsNone(term['definition'])
         self.assertIsNone(term['ic'])
@@ -131,9 +134,9 @@ class TermAPITests(unittest.TestCase):
         self.assertIsNone(term['xref'])
 
         term = res[1]
-        self.assertEqual(term['id'], 'HP:0012')
-        self.assertEqual(term['int'], 12)
-        self.assertEqual(term['name'], 'Test child level 1-2')
+        self.assertEqual(term['id'], 'HP:0021')
+        self.assertEqual(term['int'], 21)
+        self.assertEqual(term['name'], 'Test child level 2-1')
         self.assertIsNone(term['comment'])
         self.assertIsNone(term['definition'])
         self.assertIsNone(term['ic'])
@@ -171,6 +174,7 @@ class TermAPITests(unittest.TestCase):
             200
         )
         res = response.json()
+        res.sort(key=lambda x: x['int'])
         self.assertIsInstance(res, list)
         self.assertEqual(len(res), 3)
         self.assertEqual(res[0]['id'], 'HP:0011')

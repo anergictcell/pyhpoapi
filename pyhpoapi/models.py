@@ -1,16 +1,15 @@
-from enum import Enum
 from typing import List, Optional
 from pydantic import BaseModel
 
 
-class Information_Content(BaseModel):
+class InformationContent(BaseModel):
     gene: float
     omim: float
     orpha: float
     decipher: float
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             'omim': 5.528020005103167,
             'gene': 4.915866634310163,
             'orpha': 6.491229223514548,
@@ -18,18 +17,19 @@ class Information_Content(BaseModel):
         }
 
 
-class HPO(BaseModel):
+class HpoTerm(BaseModel):
     int: int
     id: str
     name: str
-    definition: Optional[str]
-    comment: Optional[str]
-    xref: Optional[List[str]]
-    is_a: Optional[List[str]]
-    ic: Optional[Information_Content]
+    definition: Optional[str] = None
+    comment: Optional[str] = None
+    synonym: Optional[List[str]] = None
+    xref: Optional[List[str]] = None
+    is_a: Optional[List[str]] = None
+    ic: Optional[InformationContent] = None
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             'example': {
                 'int': 7401,
                 'id': 'HP:0007401',
@@ -61,13 +61,13 @@ class HPO(BaseModel):
         }
 
 
-class HPOSimple(BaseModel):
+class HpoTermMinimal(BaseModel):
     int: int
     id: str
     name: str
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             'example': {
                 'int': 7401,
                 'id': 'HP:0007401',
@@ -76,19 +76,19 @@ class HPOSimple(BaseModel):
             }
 
 
-class HPONeighbours(BaseModel):
-    parents: List[HPO]
-    children: List[HPO]
-    neighbours: List[HPO]
+class HpoNeighborTerms(BaseModel):
+    parents: List[HpoTerm]
+    children: List[HpoTerm]
+    neighbours: List[HpoTerm]
 
 
 class Omim(BaseModel):
     id: int
     name: str
-    hpo: Optional[List[HPO]]
+    hpo: Optional[List[HpoTerm]] = None
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             'example': {
                 'id': 230800,
                 'name': 'GAUCHER DISEASE, TYPE I'
@@ -100,10 +100,10 @@ class Gene(BaseModel):
     id: int
     name: str
     symbol: str
-    hpo: Optional[List[HPO]]
+    hpo: Optional[List[HpoTerm]] = None
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             'example': {
                 'id': 2629,
                 'name': 'GBA',
@@ -112,62 +112,62 @@ class Gene(BaseModel):
         }
 
 
-class Similarity_Score(BaseModel):
-    set1: List[HPOSimple]
-    set2: List[HPOSimple]
+class SimilarityScore(BaseModel):
+    set1: List[HpoTermMinimal]
+    set2: List[HpoTermMinimal]
     similarity: float
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             'example': {
-                'set1': [HPOSimple.Config.schema_extra['example']],
-                'set2': [HPOSimple.Config.schema_extra['example']],
+                'set1': [HpoTermMinimal.Config.json_schema_extra['example']],
+                'set2': [HpoTermMinimal.Config.json_schema_extra['example']],
                 'similarity': 0.3422332
             }
         }
 
 
-class Similarity_Score_OMIM(BaseModel):
-    set1: List[HPOSimple]
-    set2: List[HPOSimple]
+class SimilarityScore_Omim(BaseModel):
+    set1: List[HpoTermMinimal]
+    set2: List[HpoTermMinimal]
     omim: Omim
     similarity: float
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             'example': {
-                'set1': [HPOSimple.Config.schema_extra['example']],
-                'set2': [HPOSimple.Config.schema_extra['example']],
-                'omim': Omim.Config.schema_extra['example'],
+                'set1': [HpoTermMinimal.Config.json_schema_extra['example']],
+                'set2': [HpoTermMinimal.Config.json_schema_extra['example']],
+                'omim': Omim.Config.json_schema_extra['example'],
                 'similarity': 0.3422332
             }
         }
 
 
-class Similarity_Score_Gene(BaseModel):
-    set1: List[HPOSimple]
-    set2: List[HPOSimple]
+class SimilarityScore_Gene(BaseModel):
+    set1: List[HpoTermMinimal]
+    set2: List[HpoTermMinimal]
     gene: Gene
     similarity: float
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             'example': {
-                'set1': [HPOSimple.Config.schema_extra['example']],
-                'set2': [HPOSimple.Config.schema_extra['example']],
-                'gene': Gene.Config.schema_extra['example'],
+                'set1': [HpoTermMinimal.Config.json_schema_extra['example']],
+                'set2': [HpoTermMinimal.Config.json_schema_extra['example']],
+                'gene': Gene.Config.json_schema_extra['example'],
                 'similarity': 0.3422332
             }
         }
 
 
-class Batch_Similarity_Set(BaseModel):
+class SimilarityScore_SingleSet(BaseModel):
     name: str
-    similarity: Optional[float]
-    error: Optional[str]
+    similarity: Optional[float] = None
+    error: Optional[str] = None
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             'example': {
                 'name': 'Comparison-Set 123',
                 'similarity': 0.3763421567579537,
@@ -176,12 +176,12 @@ class Batch_Similarity_Set(BaseModel):
         }
 
 
-class Batch_Similarity_Score(BaseModel):
-    set1: List[HPOSimple]
-    other_sets: List[Batch_Similarity_Set]
+class SimilarityScore_Batch(BaseModel):
+    set1: List[HpoTermMinimal]
+    other_sets: List[SimilarityScore_SingleSet]
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             'example': {
                 'set1': [{
                     'int': 7401,
@@ -197,19 +197,19 @@ class Batch_Similarity_Score(BaseModel):
                     'name': 'Avascular necrosis'
                 }],
                 'other_sets': [
-                    Batch_Similarity_Set.Config.schema_extra['example'],
-                    Batch_Similarity_Set.Config.schema_extra['example']
+                    SimilarityScore_SingleSet.Config.json_schema_extra['example'],
+                    SimilarityScore_SingleSet.Config.json_schema_extra['example']
                 ]
             }
         }
 
 
-class POST_OMIM_Batch(BaseModel):
+class PostBody_Similarity_Omim(BaseModel):
     set1: str
     omim_diseases: List[int]
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "set1": "HP:0007401,HP:0010885,HP:0006530",
                 "omim_diseases": [230800, 230900, 231000, 231005, 608013]
@@ -217,12 +217,12 @@ class POST_OMIM_Batch(BaseModel):
         }
 
 
-class POST_Gene_Batch(BaseModel):
+class PostBody_Similarity_Gene(BaseModel):
     set1: str
     genes: List[str]
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "set1": "HP:0007401,HP:0010885,HP:0006530",
                 "genes": ['GBA', 'EZH2']
@@ -230,25 +230,7 @@ class POST_Gene_Batch(BaseModel):
         }
 
 
-class Similarity_Method(Enum):
-    resnik = 'resnik'
-    lin = 'lin'
-    jc = 'jc'
-    jc2 = 'jc2'
-    rel = 'rel'
-    ic = 'ic'
-    graphic = 'graphic'
-    dist = 'dist'
-    equal = 'equal'
-
-
-class Combination_Method(Enum):
-    funSimAvg = 'funSimAvg'
-    funSimMax = 'funSimMax'
-    BMA = 'BMA'
-
-
-class POST_HPOSet(BaseModel):
+class NamedHpoSet(BaseModel):
     """
     Defines the POST body for an HPO Set
     """
@@ -256,12 +238,12 @@ class POST_HPOSet(BaseModel):
     name: str
 
 
-class POST_Batch(BaseModel):
+class PostBody_HpoSets(BaseModel):
     set1: str
-    other_sets: List[POST_HPOSet]
+    other_sets: List[NamedHpoSet]
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "set1": "HP:0007401,HP:0010885,HP:0006530",
                 "other_sets": [
