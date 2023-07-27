@@ -290,16 +290,33 @@ async def terms_similarity(
     hposet1 = get_hpo_set(set1)
     hposet2 = get_hpo_set(set2)
 
-    return {
-        'set1': hposet1.toJSON(),
-        'set2': hposet2.toJSON(),
-        'similarity': hposet1.similarity(
-            hposet2,
-            kind=kind,
-            method=method,
-            combine=combine
-        )
-    }
+    try:
+        return {
+            'set1': hposet1.toJSON(),
+            'set2': hposet2.toJSON(),
+            'similarity': hposet1.similarity(
+                hposet2,
+                kind=kind,
+                method=method,
+                combine=combine
+            )
+        }
+    except NotImplementedError:
+        raise HTTPException(
+            status_code=400,
+            detail="The similarity method is not properly implemented"
+            )
+    except RuntimeError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid `method` or `combine` parameter"
+            )
+    except AttributeError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid information content kind specified"
+            )
+
 
 
 @router.post('/similarity/', include_in_schema=False)
@@ -450,7 +467,14 @@ async def gene_enrichment(
     """
     assert gene_model, 'The Gene Enrichment Model is not defined'
     hposet = get_hpo_set(set1)
-    res = gene_model.enrichment(method, hposet)
+    try:
+        res = gene_model.enrichment(method, hposet)
+    except (NotImplementedError, RuntimeError):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid parameter"
+            )
+
     return [{
         'gene': x['item'].toJSON(),
         'count': x['count'],
@@ -501,7 +525,14 @@ async def omim_enrichment(
     assert omim_model, 'The OMIM Enrichment Model is not defined'
 
     hposet = get_hpo_set(set1)
-    res = omim_model.enrichment(method, hposet)
+    try:
+        res = omim_model.enrichment(method, hposet)
+    except (NotImplementedError, RuntimeError):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid parameter"
+            )
+
     return [{
         'omim': x['item'].toJSON(),
         'count': x['count'],
@@ -568,20 +599,31 @@ async def hpo_suggest(
 
     hposet = get_hpo_set(set1)
 
-    if n_omim:
-        omim_res = hpo_model_omim.enrichment(
-            method,
-            [x['item'] for x in omim_model.enrichment(method, hposet)[0:n_omim]]
-        )
-    else:
-        omim_res = []
-    if n_genes:
-        gene_res = hpo_model_genes.enrichment(
-            method,
-            [x['item'] for x in gene_model.enrichment(method, hposet)[0:n_genes]]
-        )
-    else:
-        gene_res = []
+    try:
+        if n_omim:
+            omim_res = hpo_model_omim.enrichment(
+                method,
+                [x['item'] for x in omim_model.enrichment(method, hposet)[0:n_omim]]
+            )
+        else:
+            omim_res = []
+        if n_genes:
+            gene_res = hpo_model_genes.enrichment(
+                method,
+                [x['item'] for x in gene_model.enrichment(method, hposet)[0:n_genes]]
+            )
+        else:
+            gene_res = []
+    except NotImplementedError:
+        raise HTTPException(
+            status_code=404,
+            detail="This method is not implemented"
+            )
+    except RuntimeError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid parameter"
+            )
 
     res = sorted(omim_res + gene_res, key=lambda x: x['enrichment'])[offset:]
 

@@ -121,17 +121,34 @@ async def omim_similarity(
         )
     set2 = HPOSet.from_queries([int(x) for x in disease.hpo])
 
-    return {
-        'set1': hposet.toJSON(),
-        'set2': set2.toJSON(),
-        'omim': disease.toJSON(),
-        'similarity': hposet.similarity(
-            set2,
-            kind=kind,
-            method=method,
-            combine=combine
-        )
-    }
+    try:
+        return {
+            'set1': hposet.toJSON(),
+            'set2': set2.toJSON(),
+            'omim': disease.toJSON(),
+            'similarity': hposet.similarity(
+                set2,
+                kind=kind,
+                method=method,
+                combine=combine
+            )
+        }
+    except NotImplementedError:
+        raise HTTPException(
+            status_code=400,
+            detail="The similarity method is not properly implemented"
+            )
+    except RuntimeError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid `method` or `combine` parameter"
+            )
+    except AttributeError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid information content kind specified"
+            )
+
 
 
 @router.post(
@@ -156,7 +173,7 @@ async def batch_omim_similarity(
             disease = Omim.get(other)
             hpos = ','.join([str(x) for x in disease.hpo])
         except KeyError:
-            hpos = ''
+            hpos = f"unknown Omim disease {other}"
 
         other_sets.append(
             models.NamedHpoSet(
@@ -229,17 +246,33 @@ async def gene_similarity(
         raise HTTPException(status_code=404, detail="Gene does not exist")
     set2 = HPOSet.from_queries([int(x) for x in actual_gene.hpo])
 
-    return {
-        'set1': hposet.toJSON(),
-        'set2': set2.toJSON(),
-        'gene': actual_gene.toJSON(),
-        'similarity': hposet.similarity(
-            set2,
-            kind=kind,
-            method=method,
-            combine=combine
-        )
-    }
+    try:
+        return {
+            'set1': hposet.toJSON(),
+            'set2': set2.toJSON(),
+            'gene': actual_gene.toJSON(),
+            'similarity': hposet.similarity(
+                set2,
+                kind=kind,
+                method=method,
+                combine=combine
+            )
+        }
+    except NotImplementedError:
+        raise HTTPException(
+            status_code=400,
+            detail="The similarity method is not properly implemented"
+            )
+    except RuntimeError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid `method` or `combine` parameter"
+            )
+    except AttributeError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid information content kind specified"
+            )
 
 
 @router.post(
@@ -264,7 +297,7 @@ async def batch_gene_similarity(
             actual_gene = Gene.get(other)
             hpos = ','.join([str(x) for x in actual_gene.hpo])
         except KeyError:
-            hpos = ''
+            hpos = f"unknown gene {other}"
 
         other_sets.append(
             models.NamedHpoSet(

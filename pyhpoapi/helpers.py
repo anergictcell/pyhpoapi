@@ -14,6 +14,9 @@ class MockHPOEnrichment:
     def __init__(self, *args, **kwargs):
         pass
 
+    def enrichment(self, *args, **kwargs):
+        raise NotImplemented
+
 def get_hpo_term(termid: Union[int, str]) -> HPOTerm:
     """
     Convert the HPO-ID from a REST-API query parameter to an HPOTerm object
