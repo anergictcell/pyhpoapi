@@ -22,10 +22,11 @@ jobs:
         id: build_package
         run: |
           sudo apt purge python3-setuptools
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-          python -m pip install sdist wheel
-          python setup.py sdist bdist_wheel
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements.txt
+          python3 -m pip install sdist wheel
+          python3 -c 'import setuptools; print(setuptools.__path__, setuptools.__version__)'
+          python3 setup.py sdist bdist_wheel
           TARNAME=$(ls -1 dist/pyhpoapi*.tar.gz | head -n 1)
           echo "::set-output name=tar_filename::$TARNAME"
           WHEELNAME=$(ls -1 dist/pyhpoapi*.whl | head -n 1)
