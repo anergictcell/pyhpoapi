@@ -42,10 +42,15 @@ def custom_openapi_wrapper(app):
 
 
 def initialize_ontology() -> None:
-    data_dir = os.environ.get("PYHPOAPI_DATA_DIR", "")
-    logger.debug(f"Loading Ontology from {data_dir}")
+    data_dir = config.MASTER_DATA
 
-    _ = Ontology(data_dir)
+    if data_dir == "":
+        logger.debug("Using builtin standard ontology")
+        _ = Ontology()
+    else:
+        logger.info(f"Loading Ontology from {data_dir}")
+        _ = Ontology(data_dir)
+
     terms.gene_model = EnrichmentModel('gene')
     terms.omim_model = EnrichmentModel('omim')
     terms.hpo_model_genes = HPOEnrichment('gene')

@@ -4,7 +4,6 @@ as a global configuration.
 """
 
 import os
-import configparser
 from typing import Any, List
 
 
@@ -15,27 +14,20 @@ def config_item_list(value: str, convert=str) -> List[Any]:
     return [convert(x) for x in value.split(',')]
 
 
-local_config = os.path.join(
-    os.getcwd(),
-    'config.ini'
-    )
+VERSION = "2.0.0"
 
-
-config = configparser.ConfigParser()
-if os.path.exists(local_config):
-    config.read(local_config)
-
-
-VERSION = config.get('default', 'version', fallback='1.2.2')
+MASTER_DATA = os.environ.get("PYHPOAPI_DATA_DIR", "")
 
 CORS_ORIGINS = config_item_list(
-    config.get('default', 'cors-origins', fallback='')
+    os.environ.get("PYHPOAPI_CORS_ORIGINS", "")
 )
+
 CORS_METHODS = config_item_list(
-    config.get('default', 'cors-methods', fallback='')
+    os.environ.get("PYHPOAPI_CORS_METHODS", "")
 )
+
 CORS_HEADERS = config_item_list(
-    config.get('default', 'cors-headers', fallback='')
+    os.environ.get("PYHPOAPI_CORS_HEADERS", "")
 )
 
 OPENAPI_TAGS = [

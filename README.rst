@@ -24,6 +24,16 @@ The easiest way to install PyHPO-API is via pip
     pip install pyhpoapi
 
 
+.. note::
+
+    **PyHPO-API** ships with ``pyhpo`` as the underlying Ontology by default. it is also possible to use `hpo3 <https://pypi.org/project/hpo3/>`_ instead. ``hpo3`` is a drop-in replacement of ``pyhpo`` written in Rust and is much faster. It is not 100% feature complete, so use it with caution. To switch to ``hpo3`` unintstall pyhpo and then install hpo3
+
+    .. code:: bash
+
+        pip uninstall -y pyhpo
+        pip install hpo3
+
+
 Usage
 =====
 
@@ -53,13 +63,11 @@ you can run PyHPO-API with multiple workers
 
 CORS
 ----
-If you need to allow cross-origin requests, you can simply create
-a ``config.ini`` file in your working directory and specify CORS settings::
+If you need to allow cross-origin requests, you specify CORS settings through environment variables::
 
-    [default]
-    cors-origins = *
-    cors-methods = GET,POST
-    cors-headers = *
+    export PYHPOAPI_CORS_ORIGINS="*"
+    export PYHPOAPI_CORS_METHODS="GET,POST"
+    export PYHPOAPI_CORS_HEADERS="*"
 
 
 Dev
