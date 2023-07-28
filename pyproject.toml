@@ -45,7 +45,7 @@ dependencies = [
 dynamic = ["version"]
 
 [tool.setuptools]
-packages = ["pyhpoapi"]
+packages = ["pyhpoapi", "pyhpoapi.routers"]
 
 [tool.setuptools.dynamic]
 version = {attr = "pyhpoapi.config.VERSION"}
