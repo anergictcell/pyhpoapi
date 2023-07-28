@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyhpoapi"
+authors = [
+    {name = "Jonas Marcello", email = "jonas.marcello@esbme.com"}
+]
+description = "A REST API for the HPO ontology using PyHPO"
+readme = "README.rst"
+requires-python = ">= 3.7"
+keywords = ["HPO", "REST-API", "Bioinformatics", "Ontology", "Phenotype"]
+license = {text = "MIT License"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: System Administrators,",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content,",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers,",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application,",
+]
+dependencies = [
+    "pydantic >= 2",
+    "scipy",
+    "pyhpo >= 3.2",
+    "fastapi >= 0.100",
+    "uvicorn",
+    "aiofiles",
+]
+dynamic = ["version"]
+
+[tool.setuptools]
+packages = ["pyhpoapi"]
+
+[tool.setuptools.dynamic]
+version = {attr = "pyhpoapi.config.VERSION"}
