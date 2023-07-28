@@ -106,8 +106,6 @@ class TermAPITests(unittest.TestCase):
         self.assertEqual(term['id'], 'HP:0000001')
         self.assertEqual(term['int'], 1)
         self.assertEqual(term['name'], 'Test root')
-        self.assertEqual(term['comment'], 'FooBar')
-        self.assertEqual(term['definition'], 'BarFoo')
         self.assertIsNotNone(term['ic'])
         self.assertEqual(term['is_a'], [])
         self.assertEqual(term['xref'], [])

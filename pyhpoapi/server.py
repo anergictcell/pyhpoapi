@@ -42,7 +42,7 @@ def custom_openapi_wrapper(app):
 
 
 def initialize_ontology() -> None:
-    data_dir = os.environ.get("PYHPOAPI_DATA_DIR", None)
+    data_dir = os.environ.get("PYHPOAPI_DATA_DIR", "")
     logger.debug(f"Loading Ontology from {data_dir}")
 
     _ = Ontology(data_dir)

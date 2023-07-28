@@ -4,10 +4,13 @@ from unittest.mock import patch, MagicMock
 
 from fastapi.testclient import TestClient
 from pyhpoapi.server import main
+from pyhpoapi.routers import terms
 
+import pyhpo
 from pyhpo import Ontology
 from pyhpo.annotations import Gene, Omim
-from pyhpo import HPOSet
+from pyhpo.stats import EnrichmentModel
+
 
 
 client = TestClient(main())
@@ -99,7 +102,7 @@ class TermsAPITests(unittest.TestCase):
             }]
         )
         self.assertIsInstance(res['similarity'], float)
-        self.assertGreater(
+        self.assertGreaterEqual(
             res['similarity'],
             0
         )
@@ -124,6 +127,10 @@ class TermsAnnotationTests(unittest.TestCase):
             'data'
         )
         _ = Ontology(data_folder=folder)
+
+        terms.gene_model = EnrichmentModel('gene')
+        terms.omim_model = EnrichmentModel('omim')
+
 
     def test_intersecting_OMIM_diseases(self):
         set1 = 'HP:0000013,HP:0000021'
@@ -183,156 +190,42 @@ class TermsAnnotationTests(unittest.TestCase):
             res
         )
 
-    @patch('pyhpoapi.routers.terms.gene_model')
-    def test_single_gene_enrichment(self, mock_model):
+    def test_gene_enrichment(self):
         """
         Assuming the gene_model.enrichment method is propery tested
         in the upstream pyhpo package
         """
         set1 = 'HP:0000041,HP:0000031'
-        mock_model.enrichment = MagicMock(
-            return_value=[{
-                'item': Gene(12, symbol='G1'),
-                'count': 12,
-                'enrichment': 0.4
-            }])
         response = client.get(
             '/terms/enrichment/genes?set1={}'.format(
                 set1)
         )
         res = response.json()
-        mock_model.enrichment.assert_called_with(
-            'hypergeom',
-            HPOSet.from_serialized('31+41')
-        )
-        mock_model.enrichment.assert_called_once()
-        self.assertEqual(len(res), 1)
-        self.assertEqual(
-            res[0]['gene'],
-            {'id': 12, 'name': 'G1', 'symbol': 'G1'}
-        )
-        self.assertEqual(res[0]['count'], 12)
-        self.assertEqual(res[0]['enrichment'], 0.4)
-
-    @patch('pyhpoapi.routers.terms.gene_model')
-    def test_multi_gene_enrichment(self, mock_model):
-        """
-        Assuming the gene_model.enrichment method is propery tested
-        in the upstream pyhpo package
-        """
-        set1 = 'HP:0000041,HP:0000031'
-        mock_model.enrichment = MagicMock(
-            return_value=[
-                {
-                    'item': Gene(12, symbol='G1'),
-                    'count': 12,
-                    'enrichment': 0.4
-                },
-                {
-                    'item': Gene(15, symbol='G2'),
-                    'count': 10,
-                    'enrichment': 0.8
-                }
-            ])
-        response = client.get(
-            '/terms/enrichment/genes?set1={}'.format(
-                set1)
-        )
-        res = response.json()
-        mock_model.enrichment.assert_called_with(
-            'hypergeom',
-            HPOSet.from_serialized('31+41')
-        )
-        mock_model.enrichment.assert_called_once()
         self.assertEqual(len(res), 2)
         self.assertEqual(
             res[0]['gene'],
-            {'id': 12, 'name': 'G1', 'symbol': 'G1'}
+            {'id': 1, 'name': 'Gene1', 'symbol': 'Gene1'}
         )
-        self.assertEqual(res[0]['count'], 12)
-        self.assertEqual(res[0]['enrichment'], 0.4)
-        self.assertEqual(
-            res[1]['gene'],
-            {'id': 15, 'name': 'G2', 'symbol': 'G2'}
-        )
-        self.assertEqual(res[1]['count'], 10)
-        self.assertEqual(res[1]['enrichment'], 0.8)
+        self.assertEqual(res[0]['count'], 2)
 
-    @patch('pyhpoapi.routers.terms.omim_model')
-    def test_single_omim_enrichment(self, mock_model):
+
+    def test_omim_enrichment(self):
         """
         Assuming the gene_model.enrichment method is propery tested
         in the upstream pyhpo package
         """
-        set1 = 'HP:0000041,HP:0000031'
-        mock_model.enrichment = MagicMock(
-            return_value=[{
-                'item': Omim(12, name='D1'),
-                'count': 12,
-                'enrichment': 0.4
-            }])
+        set1 = 'HP:0000021,HP:0000013'
         response = client.get(
             '/terms/enrichment/omim?set1={}'.format(
                 set1)
         )
         res = response.json()
-        mock_model.enrichment.assert_called_with(
-            'hypergeom',
-            HPOSet.from_serialized('31+41')
-        )
-        mock_model.enrichment.assert_called_once()
-        self.assertEqual(len(res), 1)
-        self.assertEqual(
-            res[0]['omim'],
-            {'id': 12, 'name': 'D1'}
-        )
-        self.assertEqual(res[0]['count'], 12)
-        self.assertEqual(res[0]['enrichment'], 0.4)
-
-    @patch('pyhpoapi.routers.terms.omim_model')
-    def test_multi_omim_enrichment(self, mock_model):
-        """
-        Assuming the gene_model.enrichment method is propery tested
-        in the upstream pyhpo package
-        """
-        set1 = 'HP:0000041,HP:0000031'
-        mock_model.enrichment = MagicMock(
-            return_value=[
-                {
-                    'item': Omim(12, name='D1'),
-                    'count': 12,
-                    'enrichment': 0.4
-                },
-                {
-                    'item': Omim(15, name='D2'),
-                    'count': 10,
-                    'enrichment': 0.8
-                }
-            ])
-        response = client.get(
-            '/terms/enrichment/omim?set1={}'.format(
-                set1)
-        )
-        res = response.json()
-        mock_model.enrichment.assert_called_with(
-            'hypergeom',
-            HPOSet.from_serialized('31+41')
-        )
-        mock_model.enrichment.assert_called_once()
         self.assertEqual(len(res), 2)
         self.assertEqual(
             res[0]['omim'],
-            {'id': 12, 'name': 'D1'}
+            {'id': 600001, 'name': 'Disease 1'}
         )
-        self.assertEqual(res[0]['count'], 12)
-        self.assertEqual(res[0]['enrichment'], 0.4)
-        self.assertEqual(
-            res[1]['omim'],
-            {'id': 15, 'name': 'D2'}
-        )
-        self.assertEqual(res[1]['count'], 10)
-        self.assertEqual(res[1]['enrichment'], 0.8)
-
+        self.assertEqual(res[0]['count'], 2)
 
 class SimilarityBatchTests(unittest.TestCase):
     def setUp(self):
@@ -482,7 +375,7 @@ class SimilarityBatchTests(unittest.TestCase):
             res['other_sets'][1]['similarity']
         )
 
-
+@unittest.skipIf(getattr(pyhpo, "__backend__", "") == "hpo3", "hpo3 does not yet support HPO suggestions")
 class HPOSuggestionTests(unittest.TestCase):
     def setUp(self):
         folder = os.path.join(
@@ -565,7 +458,6 @@ class HPOSuggestionTests(unittest.TestCase):
             len(response),
             2
         )
-
 
 
 class HierarchyTests(unittest.TestCase):

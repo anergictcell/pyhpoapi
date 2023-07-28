@@ -177,7 +177,7 @@ class GeneTests(unittest.TestCase):
         self.assertEqual(len(res['set1']), 2)
         self.assertEqual(len(res['other_sets']), 2)
 
-    def test_omim_batch_similarity_missing_diseases(self):
+    def test_gene_batch_similarity_missing_diseases(self):
         data = {
             'set1': 'HP:0000041,HP:0000031',
             'genes': ['Gene1', 'Gene2', 'FooBar']

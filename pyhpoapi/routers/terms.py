@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query, HTTPException
-from typing import Callable, List, Optional, TypeAlias
+from typing import List, Optional
 
 from pyhpo import Ontology
 from pyhpo.stats import EnrichmentModel
@@ -651,6 +651,8 @@ async def hierarchy_graph(
         for child in term.children:
             if child not in hposet and child not in children:
                 children.add(child)
+    for term in hposet:
+        children.add(term)
 
     return [{
         'name': term.name,
@@ -659,4 +661,4 @@ async def hierarchy_graph(
         'imports': [t.name for t in term.children],
         'diseases': [d.name for d in term.omim_diseases],
         'genes': [g.name for g in term.genes]
-    } for term in (hposet | children)]
+    } for term in (children)]

@@ -155,8 +155,8 @@ async def neighbour_terms(
 
     """
     term = get_hpo_term(term_id)
-    parents = HPOSet(term.parents)
-    children = HPOSet(term.children)
+    parents = HPOSet(list(term.parents))
+    children = HPOSet(list(term.children))
     neighbours = HPOSet([])
     for parent in parents:
         for t in parent.children:

@@ -12,14 +12,14 @@ id: HP:0000118
 name: Test Phenotype
 def: BarFoo
 comment: FooBar
-is_a: HP:0000001
+is_a: HP:0000001 ! Foobar
 
 [Term]
 id: HP:0000011
 name: Test child level 1-1
 def: Some definition
 comment: Some comment
-is_a: HP:0000001
+is_a: HP:0000001 ! Foobar
 
 [Term]
 id: HP:0000012
@@ -28,33 +28,33 @@ def: Some definition
 comment: Some comment
 synonym: "another name" EXACT []
 synonym: "third name" EXACT []
-is_a: HP:0000001
+is_a: HP:0000001 ! Foobar
 
 [Term]
 id: HP:0000021
 name: Test child level 2-1
 def: Some definition
 comment: Some comment
-is_a: HP:0000011
+is_a: HP:0000011 ! Foobar
 
 [Term]
 id: HP:0000031
 name: Test child level 3
 def: Some definition
 comment: Some comment
-is_a: HP:0000021
-is_a: HP:0000012
+is_a: HP:0000021 ! Foobar
+is_a: HP:0000012 ! Foobar
 
 [Term]
 id: HP:0000041
 name: Test child level 4
 def: Some definition
 comment: Some comment
-is_a: HP:0000031
+is_a: HP:0000031 ! Foobar
 
 [Term]
 id: HP:0000013
 name: Test child level 1-3
 def: Some definition
 comment: Some comment
-is_a: HP:0000001
+is_a: HP:0000001 ! Foobar
