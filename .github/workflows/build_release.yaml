@@ -25,6 +25,7 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install -r requirements.txt
           python3 -m pip install sdist wheel
+          python3 -m pip install -Uv setuptools==62.1.0
           python3 -c 'import setuptools; print(setuptools.__path__, setuptools.__version__)'
           python3 setup.py sdist bdist_wheel
           TARNAME=$(ls -1 dist/pyhpoapi*.tar.gz | head -n 1)
